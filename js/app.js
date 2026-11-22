@@ -134,19 +134,23 @@ function renderHome(){
   }).join('');
   const total = trips.length + 1;
   document.getElementById('app').innerHTML = `
-    <div class="home-top">
-      <div>
-        <div class="eyebrow">Travel Journal</div>
-        <h1>${hello} ☀️</h1>
-        <p>${trips.length ? `지금까지 ${trips.length}번의 여행 · 다가오는 여행 ${upcoming}개` : '첫 여행을 등록하고 일정, 항공권, 경비, 준비물을 한곳에서 관리해 보세요'}</p>
+    ${navBar(true)}
+    <section class="hero">
+      <div class="hero-map" aria-hidden="true">${worldMapSVG()}</div>
+      ${skyDecor()}
+      <div class="hero-inner">
+        <span class="hero-badge">✈ ${hello}</span>
+        <h1 class="hero-title">우리의 <span class="rainbow">여행 기록</span></h1>
+        <p class="hero-sub">${trips.length
+          ? `지금까지 ${trips.length}번의 여행, 다가오는 여행 ${upcoming}개.<br>일정 · 항공권 · 경비 · 준비물을 한곳에 차곡차곡 모아요.`
+          : `세계 어디든, 함께 떠날 여행을 등록해 보세요.<br>일정 · 항공권 · 경비 · 준비물을 한곳에 차곡차곡 모아요.`}</p>
+        <div class="hero-actions">
+          <button class="btn primary lg" onclick="tripModal()">✦ 새 여행 등록</button>
+          <button class="btn outline lg" onclick="document.getElementById('myTrips').scrollIntoView({behavior:'smooth',block:'start'})">✓ 내 여행 보기</button>
+        </div>
       </div>
-      <div class="spacer"></div>
-      <div class="home-tools">
-        <button class="ghost" onclick="exportData()">백업 내보내기</button>
-        <button class="ghost" onclick="document.getElementById('importFile').click()">백업 불러오기</button>
-        <button class="btn primary" onclick="tripModal()">+ 새 여행</button>
-      </div>
-    </div>
+    </section>
+    <div class="section-head" id="myTrips"><h2>내 여행</h2><span class="muted small">${trips.length}개</span></div>
     <section class="carousel" aria-roledescription="carousel" aria-label="내 여행">
       <button class="car-nav prev" aria-label="이전 여행" onclick="carGo(carIdx-1)">‹</button>
       <div class="car-track" id="carTrack" tabindex="0" onkeydown="if(event.key==='ArrowLeft'){event.preventDefault();carGo(carIdx-1)}else if(event.key==='ArrowRight'){event.preventDefault();carGo(carIdx+1)}">
@@ -169,6 +173,74 @@ function renderHome(){
   if(start < 0) start = trips.findIndex(t => t.end >= today);
   if(start < 0) start = Math.max(0, trips.length - 1);
   initCarousel(start);
+}
+
+/* ---------- 상단 바 ---------- */
+function navBar(isHome){
+  return `<header class="topbar">
+    <button class="brand" onclick="go(null)" aria-label="처음 화면으로">
+      <span class="brand-logo" aria-hidden="true">✈</span><span class="brand-name">Travel Journal</span>
+    </button>
+    <nav class="top-links">
+      ${isHome ? `
+        <button class="top-link" onclick="exportData()">백업 내보내기</button>
+        <button class="top-link" onclick="document.getElementById('importFile').click()">백업 불러오기</button>`
+      : `<button class="top-link" onclick="go(null)">여행 목록</button>`}
+      <button class="btn primary sm" onclick="tripModal()">+ 새 여행</button>
+    </nav>
+  </header>`;
+}
+
+/* ---------- 첫 화면 배경: 세계지도 일러스트 ---------- */
+// 70칸 × 32줄 격자 위에 대륙을 파스텔 점으로 찍음 (경도 -180~180, 위도 78°N~56°S)
+const WORLD_ROWS = [
+  '17-21,24-31,38,53-55','11-21,24-30,46,52-57','3-19,20-23,25-30,38-41,43-69','3-22,25-28,31-32,36-69',
+  '4-16,20-23,26,36-38,40-66','10-16,19-23,34-35,37-62,66','10-24,33-34,36-62','11-24,34-61,63',
+  '11-22,33-35,37-40,43-44,46-60,62','12-20,33-35,38-39,40-59,62','12-20,33-58,61','13-19,33-58',
+  '14-16,19,32-41,43-45,47-58','15-18,19-20,32-42,43-46,48-51,53-56,58','16-18,21,32-43,44-45,49-50,54-56,58','17-18,32-44,49-50,54-55,58-59',
+  '19-23,32-44,50,54,59','20-25,34-44,54,56-57','19-25,37-43,54-55,56-57,58','19-28,37-42,56,61-64',
+  '20-28,38-42,55-57,62-64','20-27,37-42,44,60-63','21-27,37-42,44-45,59-64','21-27,38-41,44,57-64',
+  '21-25,38-41,57-65','21-25,38-40,57-65','21-23,38-39,57-58,61-64','21-22,63,69',
+  '20-22,63,68','21-22,67','21,23','21'
+];
+const MAP_PALETTE = ['#f7b3c7','#f9c3cf','#fbd7b5','#fde6a6','#c6ead6','#b3e0d0','#b6dcf3','#c4ccf2','#d3c3ef','#e5c3ea'];
+let _mapCache = '';
+function worldMapSVG(){
+  if(_mapCache) return _mapCache;
+  const lonX = lon => (lon + 180) / 360 * 700, latY = lat => (78 - lat) / 4.3 * 10 + 5;
+  let dots = '';
+  WORLD_ROWS.forEach((row, y) => row.split(',').forEach(seg => {
+    const [a, b = a] = seg.split('-').map(Number);
+    for(let x = a; x <= b; x++){
+      const c = MAP_PALETTE[Math.min(MAP_PALETTE.length - 1, Math.floor(x / 70 * MAP_PALETTE.length))];
+      dots += `<circle cx="${x * 10 + 5}" cy="${y * 10 + 5}" r="3.7" fill="${c}"/>`;
+    }
+  }));
+  // 서울에서 떠나는 비행 경로
+  const seoul = [lonX(127), latY(37.5)];
+  const dests = [[lonX(-9), latY(38.7)], [lonX(151), latY(-33.9)], [lonX(-74), latY(40.7)], [lonX(2.3), latY(48.9)]];
+  const lift = [-95, 0, -150, -110];
+  const routes = dests.map(([x, y], i) => {
+    const cx = (seoul[0] + x) / 2 + (i === 1 ? 70 : 0), cy = Math.min(seoul[1], y) + lift[i];
+    return `<path id="route${i}" d="M${seoul[0]},${seoul[1]} Q${cx},${cy} ${x},${y}" />`;
+  }).join('');
+  const pins = [seoul, ...dests].map(([x, y], i) => `<g transform="translate(${x},${y})"><circle r="${i ? 6 : 8}" fill="#fff" stroke="${i ? '#c2b0e3' : '#f2a6bd'}" stroke-width="3"/><circle r="${i ? 2.2 : 3}" fill="${i ? '#a48ccb' : '#ee8fab'}"/></g>`).join('');
+  const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const planes = reduce ? '' : [0, 2].map((r, k) => `<text font-size="16" dy="5" text-anchor="middle" fill="#a48ccb">✈<animateMotion dur="${10 + k * 4}s" repeatCount="indefinite" rotate="auto" begin="${k * 2}s"><mpath href="#route${r}"/></animateMotion></text>`).join('');
+  _mapCache = `<svg viewBox="0 0 700 320" preserveAspectRatio="xMidYMid meet" role="img" aria-label="세계지도">
+    <g opacity=".95">${dots}</g>
+    <g fill="none" stroke="#c2b0e3" stroke-width="2" stroke-dasharray="2 7" stroke-linecap="round">${routes}</g>
+    ${pins}${planes}
+  </svg>`;
+  return _mapCache;
+}
+// 구름과 반짝이 장식
+function skyDecor(){
+  const clouds = [[4,14,1],[78,10,.8],[86,62,.9],[10,70,.75],[60,4,.6]].map(([l,t,s], i) =>
+    `<span class="cloud c${i}" style="left:${l}%;top:${t}%;--s:${s}"></span>`).join('');
+  const sparks = [[12,18,'#f7cf5a',18],[90,22,'#f2a6bd',14],[24,62,'#94cdec',14],[80,74,'#f7cf5a',20],[52,8,'#c2b0e3',12],[68,40,'#86cfae',12]].map(([l,t,c,z], i) =>
+    `<span class="spark" style="left:${l}%;top:${t}%;color:${c};font-size:${z}px;animation-delay:${i * .5}s">✦</span>`).join('');
+  return `<div class="sky" aria-hidden="true">${clouds}${sparks}</div>`;
 }
 
 /* ---------- 캐러셀 ---------- */
@@ -215,7 +287,7 @@ function initCarousel(start){
 
 // 여행마다 고유한 커버 색상
 // 포근한 파스텔 톤 안에서만 고름 (피치, 살구, 버터, 세이지, 하늘, 로즈)
-const COZY_HUES = [18, 30, 42, 140, 195, 345, 8, 24, 160];
+const COZY_HUES = [340, 270, 205, 155, 45, 20, 300, 185, 350];
 function tripHue(t){ let h = 0; for(const c of (t.dest || t.name) + t.id) h = (h * 31 + c.charCodeAt(0)) % 9973; return COZY_HUES[h % COZY_HUES.length]; }
 const DEFAULT_PREP = [
   ['서류','여권 (유효기간 6개월 이상)'],['서류','항공권 e-티켓'],['서류','여행자 보험'],
@@ -297,6 +369,7 @@ function renderTrip(t){
   if(!TABS.some(x => x[0] === state.tab)) state.tab = 'schedule';
   const body = {schedule:renderSchedule, prep:renderPrep, flight:renderFlights, expense:renderExpenses}[state.tab](t);
   document.getElementById('app').innerHTML = `
+    ${navBar(false)}
     <div class="trip-head">
       <button class="back" title="여행 목록" onclick="go(null)">←</button>
       <div>
