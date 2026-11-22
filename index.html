@@ -176,6 +176,10 @@ table.prep td{padding:9px 6px;border-top:1px solid var(--line);text-align:center
 table.prep tbody tr:not(.cat):hover td{background:var(--surface2)}
 table.prep td.item{text-align:left;cursor:pointer;font-weight:550;padding-left:10px}
 table.prep td.acts{white-space:nowrap;text-align:right}
+table.prep .move{display:inline-flex;margin-right:4px;padding-right:4px;border-right:1px solid var(--line)}
+table.prep .move .icon-btn{width:26px;font-size:11px}
+table.prep tr.moved td{animation:flash 1s ease-out}
+@keyframes flash{from{background:var(--sel)}to{background:transparent}}
 table.prep tr.cat td{border-top:none;padding:18px 10px 6px;text-align:left;font-weight:800;font-size:12px;color:var(--accent);letter-spacing:.06em}
 table.prep tr.done td.item{text-decoration:line-through;text-decoration-color:var(--line-strong);color:var(--muted)}
 table.prep input[type=checkbox]{appearance:none;-webkit-appearance:none;width:20px;height:20px;border:1.5px solid var(--line-strong);border-radius:6px;background:var(--surface);cursor:pointer;display:inline-grid;place-items:center;vertical-align:middle;transition:background .15s,border-color .15s}
@@ -680,12 +684,12 @@ function renderPrep(t){
     const list = t.prep.filter(i => i.cat === c);
     if(!list.length) return;
     rows += `<tr class="cat"><td colspan="${t.people.length+3}">${esc(c)}</td></tr>`;
-    rows += list.map(it => `
-      <tr class="${isDone(t,it)?'done':''}">
+    rows += list.map((it, k) => `
+      <tr class="${isDone(t,it)?'done':''}" data-id="${it.id}">
         <td class="item" title="클릭하면 전원 체크/해제" onclick="toggleAll('${it.id}')">${esc(it.text)}</td>
         ${t.people.map((p,i) => `<td><input type="checkbox" aria-label="${esc(p)}" ${it.checks[p]?'checked':''} onchange="togglePrep('${it.id}',${i})"></td>`).join('')}
         <td class="memo-cell"><input type="text" class="memo-in" value="${esc(it.memo)}" placeholder="메모" onchange="setPrepMemo('${it.id}',this.value)" onkeydown="enter(event,()=>this.blur())"></td>
-        <td class="acts"><button class="icon-btn" onclick="prepModal('${it.id}')">✎</button><button class="icon-btn del" onclick="delPrep('${it.id}')">🗑</button></td>
+        <td class="acts"><span class="move"><button class="icon-btn" title="위로" aria-label="위로 이동" ${k===0?'disabled':''} onclick="movePrep('${it.id}',-1)">▲</button><button class="icon-btn" title="아래로" aria-label="아래로 이동" ${k===list.length-1?'disabled':''} onclick="movePrep('${it.id}',1)">▼</button></span><button class="icon-btn" onclick="prepModal('${it.id}')">✎</button><button class="icon-btn del" onclick="delPrep('${it.id}')">🗑</button></td>
       </tr>`).join('');
   });
   return `
@@ -775,6 +779,23 @@ function delCat(i){
     t.prepCats = cats.filter(x => x !== c);
     t.prep.forEach(it => { if(it.cat === c) it.cat = to; });
   });
+}
+// 같은 분류 안에서 바로 위/아래 항목과 자리 바꾸기
+function movePrep(id, dir){
+  const t = curTrip(), i = t.prep.findIndex(x => x.id === id);
+  if(i < 0) return;
+  const cat = t.prep[i].cat;
+  let j = i + dir;
+  while(j >= 0 && j < t.prep.length && t.prep[j].cat !== cat) j += dir;
+  if(j < 0 || j >= t.prep.length) return;
+  [t.prep[i], t.prep[j]] = [t.prep[j], t.prep[i]];
+  render();
+  const row = document.querySelector(`tr[data-id="${id}"]`);
+  if(row){
+    row.classList.add('moved');
+    const btn = row.querySelector(`.move button:nth-child(${dir < 0 ? 1 : 2})`);
+    if(btn && !btn.disabled) btn.focus();
+  }
 }
 function setPrepMemo(id, v){
   const it = curTrip().prep.find(x => x.id === id);
