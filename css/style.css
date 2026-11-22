@@ -1,21 +1,31 @@
 /* 여행 기록 - 스타일 */
 
 /* ============ 웹폰트 (눈누) ============
-   큰 글씨: 밑미 폰트 © (주)밑미 · (주)보이저엑스
-   작은 글씨: 강원교육새음체 © 강원도교육청 · 헤움디자인 */
+   히어로 제목: 밑미 폰트 © (주)밑미 · (주)보이저엑스
+   나머지 전체: 카카오 작은글씨 © Kakao Corp. (OFL-1.1) */
 @font-face{
   font-family:'MitmiFont';
   src:url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2402_1@1.0/Ownglyph_meetme-Rg.woff2') format('woff2');
   font-weight:normal;font-display:swap;
 }
 @font-face{
-  font-family:'GangwonEducationSaeum';
-  src:url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2201-2@1.0/GangwonEduSaeeum_OTFMediumA.woff') format('woff');
-  font-weight:normal;font-display:swap;
+  font-family:'KakaoSmallFont';
+  src:url('https://cdn.jsdelivr.net/gh/Project-Noonnu/2611112258@ks-kakaosmallsans-light/ks-kakaosmallsans-light/ks_KakaoSmallSans-Light.woff2') format('woff2');
+  font-weight:300;font-display:swap;
+}
+@font-face{
+  font-family:'KakaoSmallFont';
+  src:url('https://cdn.jsdelivr.net/gh/Project-Noonnu/2611112258@ks-kakaosmallsans-light/ks-kakaosmallsans-light/ks_KakaoSmallSans-Regular.woff2') format('woff2');
+  font-weight:400;font-display:swap;
+}
+@font-face{
+  font-family:'KakaoSmallFont';
+  src:url('https://cdn.jsdelivr.net/gh/Project-Noonnu/2611112258@ks-kakaosmallsans-light/ks-kakaosmallsans-light/ks_KakaoSmallSans-Bold.woff2') format('woff2');
+  font-weight:700;font-display:swap;
 }
 :root{
   --font-title:'MitmiFont',"Pretendard Variable",Pretendard,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
-  --font-body:'GangwonEducationSaeum',"Pretendard Variable",Pretendard,-apple-system,"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;
+  --font-body:'KakaoSmallFont',"Pretendard Variable",Pretendard,-apple-system,"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;
 }
 /* ============ 화이트 메인 · 파스텔 포인트 (핑크 · 라벤더 · 하늘 · 민트 · 버터) ============ */
 :root{
@@ -407,21 +417,6 @@ dialog form{padding:26px;display:flex;flex-direction:column;max-height:calc(100v
   .cloud{--s:.6 !important}
 }
 
-/* ============ 타이포 적용: 큰 글씨 = 밑미, 작은 글씨 = 강원교육새음 ============ */
-h1,h2,h3,.hero-title,.brand-name,.tbody .name,.month-title,#modalTitle,.trip-head h1,.section-head h2,.add-card b{
-  font-family:var(--font-title);font-weight:normal;letter-spacing:-.01em}
-.hero-title{font-size:clamp(38px,7vw,64px);line-height:1.15}
-.trip-head h1{font-size:27px !important}
-.tbody .name{font-size:24px}
-.month-title{font-size:20px}
-#modalTitle{font-size:22px}
-.section-head h2{font-size:25px}
-h2{font-size:22px} h3{font-size:18px}
-.brand-name{font-size:20px}/* 새음체는 글자가 작게 보여 기본 크기를 키움 */
-body{font-size:17px}
-.small,.muted.small,.tbody .dates,.hero-badge,.top-link,.cur-pick,.seg-ctl button,.exp-day,.sub-h{font-size:14.5px}
-.badge,.cell .stay,.cell .cnt,table.prep th,.home-note,label.f{font-size:13.5px}
-.cell .dn{font-size:15px}
-.hero-sub{font-size:18px}
-.btn{font-size:15px}.btn.sm{font-size:14px}.btn.lg{font-size:17px}
-input[type=text],input[type=number],input[type=date],input[type=time],input[type=datetime-local],select,textarea{font-size:16px}
+/* ============ 타이포 적용: 히어로 제목 = 밑미, 나머지 = 카카오 작은글씨 ============ */
+.hero-title{font-family:var(--font-title);font-weight:normal;letter-spacing:-.01em;font-size:clamp(40px,7.5vw,68px);line-height:1.12}
+body{font-size:15.5px}
