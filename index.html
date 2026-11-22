@@ -176,8 +176,15 @@ table.prep td{padding:9px 6px;border-top:1px solid var(--line);text-align:center
 table.prep tbody tr:not(.cat):hover td{background:var(--surface2)}
 table.prep td.item{text-align:left;cursor:pointer;font-weight:550;padding-left:10px}
 table.prep td.acts{white-space:nowrap;text-align:right}
-table.prep .move{display:inline-flex;margin-right:4px;padding-right:4px;border-right:1px solid var(--line)}
-table.prep .move .icon-btn{width:26px;font-size:11px}
+table.prep .grip-cell{width:28px;padding:0 0 0 4px !important;text-align:center}
+.drag-handle{border:none;background:none;width:26px;height:32px;border-radius:7px;color:var(--line-strong);display:inline-grid;place-items:center;cursor:grab;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;transition:color .15s,background .15s}
+tr:hover .drag-handle,.drag-handle:focus-visible{color:var(--muted)}
+.drag-handle:hover{background:var(--surface3);color:var(--text)}
+table.prep tr.pressing .drag-handle{color:var(--accent);transform:scale(1.15)}
+table.prep tr.dragging td{background:var(--accent-soft) !important;border-top-color:transparent}
+table.prep tr.dragging .drag-handle{color:var(--accent);cursor:grabbing}
+table.prep tr.dragging td:first-child{box-shadow:inset 3px 0 0 var(--accent)}
+body.is-dragging,body.is-dragging *{cursor:grabbing !important;-webkit-user-select:none;user-select:none}
 table.prep tr.moved td{animation:flash 1s ease-out}
 @keyframes flash{from{background:var(--sel)}to{background:transparent}}
 table.prep tr.cat td{border-top:none;padding:18px 10px 6px;text-align:left;font-weight:800;font-size:12px;color:var(--accent);letter-spacing:.06em}
@@ -680,16 +687,17 @@ function renderPrep(t){
   const cats = [...prepCats(t), ...new Set(t.prep.map(i => i.cat).filter(c => !prepCats(t).includes(c)))];
   if(!prepCats(t).includes(state.lastCat)) state.lastCat = prepCats(t)[0];
   let rows = '';
-  cats.forEach(c => {
+  cats.forEach((c, ci) => {
     const list = t.prep.filter(i => i.cat === c);
     if(!list.length) return;
-    rows += `<tr class="cat"><td colspan="${t.people.length+3}">${esc(c)}</td></tr>`;
-    rows += list.map((it, k) => `
-      <tr class="${isDone(t,it)?'done':''}" data-id="${it.id}">
+    rows += `<tr class="cat"><td colspan="${t.people.length+4}">${esc(c)}</td></tr>`;
+    rows += list.map(it => `
+      <tr class="${isDone(t,it)?'done':''}" data-id="${it.id}" data-cat="${ci}">
+        <td class="grip-cell">${list.length > 1 ? `<button type="button" class="drag-handle" title="꾹 눌러서 끌어 옮기기" aria-label="${esc(it.text)} 순서 옮기기 (방향키로도 이동)" onkeydown="handleKey(event,'${it.id}')"><svg width="12" height="16" viewBox="0 0 12 16" aria-hidden="true"><g fill="currentColor"><circle cx="3" cy="3" r="1.5"/><circle cx="9" cy="3" r="1.5"/><circle cx="3" cy="8" r="1.5"/><circle cx="9" cy="8" r="1.5"/><circle cx="3" cy="13" r="1.5"/><circle cx="9" cy="13" r="1.5"/></g></svg></button>` : ''}</td>
         <td class="item" title="클릭하면 전원 체크/해제" onclick="toggleAll('${it.id}')">${esc(it.text)}</td>
         ${t.people.map((p,i) => `<td><input type="checkbox" aria-label="${esc(p)}" ${it.checks[p]?'checked':''} onchange="togglePrep('${it.id}',${i})"></td>`).join('')}
         <td class="memo-cell"><input type="text" class="memo-in" value="${esc(it.memo)}" placeholder="메모" onchange="setPrepMemo('${it.id}',this.value)" onkeydown="enter(event,()=>this.blur())"></td>
-        <td class="acts"><span class="move"><button class="icon-btn" title="위로" aria-label="위로 이동" ${k===0?'disabled':''} onclick="movePrep('${it.id}',-1)">▲</button><button class="icon-btn" title="아래로" aria-label="아래로 이동" ${k===list.length-1?'disabled':''} onclick="movePrep('${it.id}',1)">▼</button></span><button class="icon-btn" onclick="prepModal('${it.id}')">✎</button><button class="icon-btn del" onclick="delPrep('${it.id}')">🗑</button></td>
+        <td class="acts"><button class="icon-btn" onclick="prepModal('${it.id}')">✎</button><button class="icon-btn del" onclick="delPrep('${it.id}')">🗑</button></td>
       </tr>`).join('');
   });
   return `
@@ -717,11 +725,11 @@ function renderPrep(t){
       </div>
       <div class="table-wrap">
         <table class="prep">
-          <thead><tr><th>항목</th>${t.people.map(p => `<th>${esc(p)}</th>`).join('')}<th style="text-align:left">메모</th><th></th></tr></thead>
-          <tbody>${rows || `<tr><td colspan="${t.people.length+3}" class="muted" style="padding:24px">준비 사항을 추가해 보세요</td></tr>`}</tbody>
+          <thead><tr><th class="grip-cell"></th><th>항목</th>${t.people.map(p => `<th>${esc(p)}</th>`).join('')}<th style="text-align:left">메모</th><th></th></tr></thead>
+          <tbody>${rows || `<tr><td colspan="${t.people.length+4}" class="muted" style="padding:24px">준비 사항을 추가해 보세요</td></tr>`}</tbody>
         </table>
       </div>
-      <div class="muted small" style="margin-top:8px">항목 이름을 누르면 전원 한 번에 체크/해제돼요. 모두 체크되면 완료로 표시됩니다.</div>
+      <div class="muted small" style="margin-top:8px">항목 이름을 누르면 전원 한 번에 체크/해제돼요. 모두 체크되면 완료로 표시됩니다.<br>왼쪽 ⠿ 아이콘을 꾹 누른 채 끌면 같은 분류 안에서 순서를 바꿀 수 있어요.</div>
     </div>`;
 }
 function addPerson(){
@@ -791,12 +799,64 @@ function movePrep(id, dir){
   [t.prep[i], t.prep[j]] = [t.prep[j], t.prep[i]];
   render();
   const row = document.querySelector(`tr[data-id="${id}"]`);
-  if(row){
-    row.classList.add('moved');
-    const btn = row.querySelector(`.move button:nth-child(${dir < 0 ? 1 : 2})`);
-    if(btn && !btn.disabled) btn.focus();
-  }
+  if(row){ row.classList.add('moved'); row.querySelector('.drag-handle')?.focus(); }
 }
+// 키보드: 손잡이에 초점을 두고 ↑/↓
+function handleKey(e, id){
+  if(e.key === 'ArrowUp' || e.key === 'ArrowDown'){ e.preventDefault(); movePrep(id, e.key === 'ArrowUp' ? -1 : 1); }
+}
+
+/* 손잡이를 꾹 눌러 끌어서 순서 바꾸기 (마우스·터치 공통) */
+let drag = null;
+document.addEventListener('pointerdown', e => {
+  const h = e.target.closest('.drag-handle');
+  if(!h || e.button > 0) return;
+  e.preventDefault();
+  const row = h.closest('tr');
+  drag = {row, h, id:row.dataset.id, cat:row.dataset.cat, pid:e.pointerId, active:false, y:e.clientY};
+  try{ h.setPointerCapture(e.pointerId); }catch(err){}
+  row.classList.add('pressing');
+  drag.timer = setTimeout(() => {
+    if(!drag) return;
+    drag.active = true;
+    row.classList.remove('pressing'); row.classList.add('dragging');
+    document.body.classList.add('is-dragging');
+    if(navigator.vibrate) try{ navigator.vibrate(15); }catch(err){}
+  }, e.pointerType === 'mouse' ? 150 : 350);
+});
+document.addEventListener('pointermove', e => {
+  if(!drag || e.pointerId !== drag.pid) return;
+  drag.y = e.clientY;
+  if(!drag.active) return;
+  e.preventDefault();
+  const others = [...document.querySelectorAll(`table.prep tr[data-cat="${drag.cat}"]`)].filter(r => r !== drag.row);
+  if(!others.length) return;
+  const before = others.find(r => { const b = r.getBoundingClientRect(); return e.clientY < b.top + b.height / 2; });
+  if(before){ if(drag.row.nextElementSibling !== before) before.before(drag.row); }
+  else{ const last = others[others.length - 1]; if(last.nextElementSibling !== drag.row) last.after(drag.row); }
+  const m = 70;
+  if(e.clientY < m) window.scrollBy(0, -12); else if(e.clientY > innerHeight - m) window.scrollBy(0, 12);
+}, {passive:false});
+function endDrag(e){
+  if(!drag || (e && e.pointerId !== drag.pid)) return;
+  clearTimeout(drag.timer);
+  const {row, active, cat, id} = drag;
+  row.classList.remove('pressing','dragging');
+  document.body.classList.remove('is-dragging');
+  drag = null;
+  if(!active) return;
+  const t = curTrip();
+  const ids = [...document.querySelectorAll(`table.prep tr[data-cat="${cat}"]`)].map(r => r.dataset.id);
+  const catName = t.prep.find(x => x.id === id)?.cat;
+  const slots = t.prep.map((p, i) => p.cat === catName ? i : -1).filter(i => i >= 0);
+  const byId = Object.fromEntries(t.prep.map(p => [p.id, p]));
+  if(ids.length !== slots.length) { render(); return; }
+  ids.forEach((pid, k) => t.prep[slots[k]] = byId[pid]);
+  render();
+  document.querySelector(`tr[data-id="${id}"]`)?.classList.add('moved');
+}
+document.addEventListener('pointerup', endDrag);
+document.addEventListener('pointercancel', endDrag);
 function setPrepMemo(id, v){
   const it = curTrip().prep.find(x => x.id === id);
   if(it){ it.memo = v.trim(); save(); }
