@@ -10,8 +10,8 @@ function load(){
   return {trips:[], currentTripId:null, tab:'schedule', selDate:null, expFilter:'all'};
 }
 function save(){
-  try{ localStorage.setItem(KEY, JSON.stringify(state)); }
-  catch(e){ toast('저장 실패: 브라우저 저장공간을 확인하세요'); }
+  try{ localStorage.setItem(KEY, JSON.stringify(state)); return true; }
+  catch(e){ toast('저장 실패: 브라우저 저장공간을 확인하세요'); return false; }
 }
 
 /* ========== 유틸 ========== */
@@ -81,6 +81,7 @@ const enter = (e, fn) => { if(e.key === 'Enter' && !e.isComposing && e.keyCode !
 /* ========== 렌더 ========== */
 function render(){
   const t = curTrip();
+  document.body.classList.toggle('home-mode', !t);
   if(!t){ state.currentTripId = null; renderHome(); }
   else renderTrip(t);
   save();
@@ -88,93 +89,131 @@ function render(){
 function go(tripId){ state.currentTripId = tripId; state.selDate = null; render(); window.scrollTo(0,0); }
 function setTab(tab){ state.tab = tab; render(); }
 
-/* ---------- 홈 ---------- */
+/* ---------- 홈 (한 화면 구성: 상단 바 · 타이틀 · 궤도 캐러셀) ---------- */
 const TRIP_DECO = ['✈️','🧳','🌴','🗺️','⛰️','🏖️','🌸','🗼','🎒','🌙'];
+const DEFAULT_TITLE = '우리의 여행 기록';
+const homeTrips = () => [...state.trips].sort((a,b) => (a.start||'').localeCompare(b.start||''));
+function titleHTML(){
+  const words = (state.homeTitle || DEFAULT_TITLE).trim().split(/\s+/);
+  if(words.length < 2) return `<span class="rainbow">${esc(words[0])}</span>`;
+  const last = words.pop();
+  return `${esc(words.join(' '))} <span class="rainbow">${esc(last)}</span>`;
+}
 function renderHome(){
-  // 날짜순(오래된 → 최근)으로 나열
-  const trips = [...state.trips].sort((a,b) => (a.start||'').localeCompare(b.start||''));
+  const trips = homeTrips();
   const today = todayStr();
   const upcoming = trips.filter(t => t.end >= today).length;
-  const hour = new Date().getHours();
-  const hello = hour < 11 ? '좋은 아침이에요' : hour < 18 ? '좋은 오후예요' : '포근한 저녁이에요';
-  const slides = trips.map((t, i) => {
+  const cards = trips.map((t, i) => {
     const h = tripHue(t);
     const doneN = t.prep.filter(it => isDone(t,it)).length, pct = t.prep.length ? Math.round(doneN / t.prep.length * 100) : 0;
     return `
-    <div class="slide" data-i="${i}">
-      <article class="tcard" tabindex="0" aria-label="${esc(t.name)}" onclick="slideClick(${i},'${t.id}')" onkeydown="if(event.key==='Enter')go('${t.id}')">
-        <div class="tcover" style="--h:${h}">
-          <div class="sun"></div>
-          <div class="deco">${TRIP_DECO[(i + h) % TRIP_DECO.length]}</div>
-          <div class="top">
-            ${dday(t) ? `<span class="dday">${dday(t)}</span>` : ''}
-            <div class="acts">
-              <button class="icon-btn" title="여행 정보 수정" aria-label="여행 정보 수정" onclick="event.stopPropagation();tripModal('${t.id}')">✎</button>
-              <button class="icon-btn" title="여행 삭제" aria-label="여행 삭제" onclick="event.stopPropagation();delTrip('${t.id}')">🗑</button>
-            </div>
-          </div>
-          <span class="dest-pill">📍 ${esc(t.dest || '목적지 미정')}</span>
-        </div>
-        <div class="tbody">
-          <div class="name">${esc(t.name)}</div>
-          <div class="dates">${t.start ? `${fmtDate(t.start,true)} ~ ${fmtDate(t.end)} · ${rangeDates(t.start,t.end).length}일` : '날짜 미정'}</div>
-          <div class="stats">
-            <span class="badge gray">👥 ${t.people.length}명</span>
-            <span class="badge gray">✈ 항공 ${t.flights.length}</span>
-            <span class="badge gray">💰 지출 ${t.expenses.length}건</span>
-          </div>
-          <div class="foot">
-            <span class="small muted" style="white-space:nowrap">준비 ${pct}%</span>
-            <div class="mini-prog"><div style="width:${pct}%"></div></div>
-            <button class="open-btn" tabindex="-1" onclick="event.stopPropagation();go('${t.id}')">열기 →</button>
+    <article class="ocard" data-i="${i}" data-id="${t.id}" aria-label="${esc(t.name)}">
+      <div class="ocover ${t.cover ? 'has-img' : ''}" style="--h:${h};${t.cover ? `background-image:url('${t.cover}')` : ''}">
+        ${t.cover ? '' : `<div class="sun"></div><div class="deco">${TRIP_DECO[(i + h) % TRIP_DECO.length]}</div>`}
+        <div class="otop">
+          ${dday(t) ? `<span class="dday">${dday(t)}</span>` : ''}
+          <div class="acts">
+            <button class="icon-btn" title="커버 이미지" aria-label="커버 이미지 올리기·바꾸기" onclick="coverMenu('${t.id}')">📷</button>
+            <button class="icon-btn" title="여행 정보 수정" aria-label="여행 정보 수정" onclick="tripModal('${t.id}')">✎</button>
+            <button class="icon-btn" title="여행 삭제" aria-label="여행 삭제" onclick="delTrip('${t.id}')">🗑</button>
           </div>
         </div>
-      </article>
-    </div>`;
+        <span class="dest-pill">📍 ${esc(t.dest || '목적지 미정')}</span>
+      </div>
+      <div class="obody">
+        <div class="name">${esc(t.name)}</div>
+        <div class="dates">${t.start ? `${fmtDate(t.start,true)} ~ ${fmtDate(t.end)} · ${rangeDates(t.start,t.end).length}일` : '날짜 미정'}</div>
+        <div class="stats">
+          <span class="badge gray">👥 ${t.people.length}</span>
+          <span class="badge gray">✈ ${t.flights.length}</span>
+          <span class="badge gray">💰 ${t.expenses.length}</span>
+          <span class="badge gray">✅ ${pct}%</span>
+        </div>
+      </div>
+    </article>`;
   }).join('');
-  const total = trips.length + 1;
   document.getElementById('app').innerHTML = `
-    ${navBar(true)}
-    <section class="hero">
-      <div class="hero-map" aria-hidden="true">${worldMapSVG()}</div>
-      ${skyDecor()}
-      <div class="hero-inner">
-        <span class="hero-badge">✈ ${hello}</span>
-        <h1 class="hero-title">우리의 <span class="rainbow">여행 기록</span></h1>
-        <p class="hero-sub">${trips.length
-          ? `지금까지 ${trips.length}번의 여행, 다가오는 여행 ${upcoming}개.<br>일정 · 항공권 · 경비 · 준비물을 한곳에 차곡차곡 모아요.`
-          : `세계 어디든, 함께 떠날 여행을 등록해 보세요.<br>일정 · 항공권 · 경비 · 준비물을 한곳에 차곡차곡 모아요.`}</p>
-        <div class="hero-actions">
-          <button class="btn primary lg" onclick="tripModal()">✦ 새 여행 등록</button>
-          <button class="btn outline lg" onclick="document.getElementById('myTrips').scrollIntoView({behavior:'smooth',block:'start'})">✓ 내 여행 보기</button>
-        </div>
+    <div class="home">
+      <div class="home-bg" aria-hidden="true"><div class="home-map">${worldMapSVG()}</div>${skyDecor()}</div>
+      ${navBar(true)}
+      <header class="home-head">
+        <h1 class="hero-title"><button class="title-btn" onclick="editTitle()" title="타이틀 수정">${titleHTML()}<span class="title-edit" aria-hidden="true">✎</span></button></h1>
+        <p class="hero-sub">${trips.length ? `지금까지 ${trips.length}번의 여행 · 다가오는 여행 ${upcoming}개` : '세계 어디든, 함께 떠날 여행을 등록해 보세요'}</p>
+      </header>
+      <section class="orbit" id="orbit" tabindex="0" aria-roledescription="carousel" aria-label="내 여행 — 좌우로 끌어서 넘기기">
+        <div class="orbit-ring" aria-hidden="true"></div>
+        ${cards}
+        <article class="ocard add" data-i="${trips.length}" aria-label="새 여행 등록">
+          <div class="add-inner"><div class="plus">+</div><b>새 여행 떠나기</b><span class="small">여행을 등록하고 기록을 시작해요</span></div>
+        </article>
+      </section>
+      <div class="orbit-foot">
+        <button class="orbit-nav" aria-label="이전 여행" onclick="orbitStep(-1)">‹</button>
+        <div class="dots">${Array.from({length: trips.length + 1}, (_, i) => `<button class="dot" aria-label="${i < trips.length ? esc(trips[i].name) : '새 여행'}" onclick="orbitGo(${i})"></button>`).join('')}</div>
+        <button class="orbit-nav" aria-label="다음 여행" onclick="orbitStep(1)">›</button>
       </div>
-    </section>
-    <div class="section-head" id="myTrips"><h2>내 여행</h2><span class="muted small">${trips.length}개</span></div>
-    <section class="carousel" aria-roledescription="carousel" aria-label="내 여행">
-      <button class="car-nav prev" aria-label="이전 여행" onclick="carGo(carIdx-1)">‹</button>
-      <div class="car-track" id="carTrack" tabindex="0" onkeydown="if(event.key==='ArrowLeft'){event.preventDefault();carGo(carIdx-1)}else if(event.key==='ArrowRight'){event.preventDefault();carGo(carIdx+1)}">
-        ${slides}
-        <div class="slide" data-i="${trips.length}">
-          <div class="add-card" role="button" tabindex="0" onclick="slideClick(${trips.length})" onkeydown="if(event.key==='Enter')tripModal()">
-            <div class="plus">+</div>
-            <b>새 여행 떠나기</b>
-            <span class="small">여행을 등록하고 기록을 시작해요</span>
-          </div>
-        </div>
-      </div>
-      <button class="car-nav next" aria-label="다음 여행" onclick="carGo(carIdx+1)">›</button>
-      <div class="dots">${Array.from({length: total}, (_, i) => `<button class="dot" aria-label="${i < trips.length ? esc(trips[i].name) : '새 여행'}" onclick="carGo(${i})"></button>`).join('')}</div>
-    </section>
-    <div class="home-note">옆으로 넘기거나 ‹ › 버튼으로 여행을 둘러보세요 · 모든 기록은 이 브라우저에 자동 저장돼요</div>
+    </div>
   `;
   // 처음엔 마지막으로 본 여행, 없으면 가장 가까운 다가오는 여행
   let start = trips.findIndex(t => t.id === state.homeTripId);
   if(start < 0) start = trips.findIndex(t => t.end >= today);
   if(start < 0) start = Math.max(0, trips.length - 1);
-  initCarousel(start);
+  orbitInit(start);
+}
+function editTitle(){
+  openModal('타이틀 수정', `
+    <label class="f">첫 화면 타이틀<input type="text" name="title" maxlength="24" value="${esc(state.homeTitle || DEFAULT_TITLE)}" placeholder="${DEFAULT_TITLE}"></label>
+    <div class="muted small">마지막 단어는 무지개색으로 보여요. 비워 두면 기본값으로 돌아가요.</div>
+  `, d => { state.homeTitle = d.title.trim() || DEFAULT_TITLE; });
 }
 
+/* ---------- 커버 이미지 ---------- */
+let coverTargetId = null;
+function coverMenu(id){
+  const t = state.trips.find(x => x.id === id);
+  if(!t.cover){ pickCover(id); return; }
+  openModal('커버 이미지', `
+    <img class="cover-preview" src="${t.cover}" alt="${esc(t.name)} 커버 이미지">
+    <div class="row" style="margin-top:14px;justify-content:center">
+      <button type="button" class="btn" onclick="closeModal();pickCover('${id}')">📷 다른 이미지로 변경</button>
+      <button type="button" class="btn" onclick="removeCover('${id}')">🗑 이미지 삭제</button>
+    </div>
+  `, () => {}, '완료');
+}
+function pickCover(id){
+  coverTargetId = id;
+  const inp = document.getElementById('coverFile');
+  inp.value = ''; inp.click();
+}
+function removeCover(id){
+  const t = state.trips.find(x => x.id === id);
+  delete t.cover; closeModal(); render(); toast('커버 이미지를 삭제했어요');
+}
+// 큰 사진은 가로·세로 최대 900px, JPEG로 줄여서 저장 (브라우저 저장공간 절약)
+async function shrinkImage(file, max = 900, quality = .8){
+  const url = URL.createObjectURL(file);
+  try{
+    const img = await new Promise((ok, no) => { const im = new Image(); im.onload = () => ok(im); im.onerror = no; im.src = url; });
+    const k = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight));
+    const c = document.createElement('canvas');
+    c.width = Math.round(img.naturalWidth * k); c.height = Math.round(img.naturalHeight * k);
+    c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+    return c.toDataURL('image/jpeg', quality);
+  } finally { URL.revokeObjectURL(url); }
+}
+document.getElementById('coverFile').addEventListener('change', async e => {
+  const file = e.target.files[0], t = state.trips.find(x => x.id === coverTargetId);
+  if(!file || !t) return;
+  if(!file.type.startsWith('image/')){ toast('이미지 파일만 올릴 수 있어요'); return; }
+  let data;
+  try{ data = await shrinkImage(file); }
+  catch(err){ toast('이 이미지는 열 수 없어요 (JPG·PNG 권장)'); return; }
+  const prev = t.cover;
+  t.cover = data;
+  if(!save()){ t.cover = prev; save(); toast('저장공간이 부족해요. 더 작은 이미지를 써 주세요'); return; }
+  state.homeTripId = t.id;
+  render(); toast('커버 이미지를 저장했어요');
+});
 /* ---------- 상단 바 ---------- */
 function navBar(isHome){
   return `<header class="topbar">
@@ -243,47 +282,133 @@ function skyDecor(){
   return `<div class="sky" aria-hidden="true">${clouds}${sparks}</div>`;
 }
 
-/* ---------- 캐러셀 ---------- */
-let carIdx = 0;
-function carSlides(){ return [...document.querySelectorAll('#carTrack .slide')]; }
-function carGo(i, instant){
-  const track = document.getElementById('carTrack'), slides = carSlides();
-  if(!track || !slides.length) return;
-  i = Math.max(0, Math.min(slides.length - 1, i));
-  const s = slides[i];
-  track.scrollTo({left: s.offsetLeft - (track.clientWidth - s.offsetWidth) / 2, behavior: instant ? 'instant' : 'smooth'});
-  carMark(i);
+/* ---------- 궤도 캐러셀 (드래그 · 관성 · 스냅) ---------- */
+// 카드들이 기울어진 원형 궤도 위에 놓이고, rot(도) 값만큼 함께 회전함
+const orb = {rot:0, vel:0, n:0, step:360, anim:0, drag:null, active:0, wheelT:0};
+const normDeg = a => ((a % 360) + 540) % 360 - 180;   // -180 ~ 180
+function orbitCards(){ return [...document.querySelectorAll('#orbit .ocard')]; }
+function orbitInit(start){
+  const stage = document.getElementById('orbit');
+  if(!stage) return;
+  orb.n = orbitCards().length;
+  orb.step = 360 / orb.n;
+  cancelAnimationFrame(orb.anim);
+  orb.rot = -start * orb.step; orb.vel = 0;
+  orbitLayout();
+  stage.addEventListener('pointerdown', orbitDown);
+  stage.addEventListener('keydown', e => {
+    if(e.key === 'ArrowLeft'){ e.preventDefault(); orbitStep(-1); }
+    else if(e.key === 'ArrowRight'){ e.preventDefault(); orbitStep(1); }
+    else if(e.key === 'Enter'){ e.preventDefault(); orbitOpen(orb.active); }
+  });
+  stage.addEventListener('wheel', e => {
+    const d = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+    if(!d) return;
+    e.preventDefault();
+    cancelAnimationFrame(orb.anim);
+    orb.rot -= d * .12; orbitLayout();
+    clearTimeout(orb.wheelT); orb.wheelT = setTimeout(orbitSnap, 140);
+  }, {passive:false});
 }
-function carMark(i){
-  carIdx = i;
-  carSlides().forEach((s, k) => s.classList.toggle('active', k === i));
-  document.querySelectorAll('.dots .dot').forEach((d, k) => { d.classList.toggle('on', k === i); d.setAttribute('aria-current', k === i ? 'true' : 'false'); });
-  const n = carSlides().length;
-  const p = document.querySelector('.car-nav.prev'), x = document.querySelector('.car-nav.next');
-  if(p) p.disabled = i <= 0; if(x) x.disabled = i >= n - 1;
-  const trip = [...state.trips].sort((a,b) => (a.start||'').localeCompare(b.start||''))[i];
+function orbitLayout(){
+  const stage = document.getElementById('orbit');
+  if(!stage) return;
+  const cards = orbitCards(), W = stage.clientWidth, H = stage.clientHeight;
+  const cardH = cards[0] ? cards[0].offsetHeight : 300;
+  const base = Math.max(.6, Math.min(1.2, (H * .56) / cardH));  // 화면 높이에 맞춰 카드 크기 조절
+  const Rx = Math.min(W * .36, 420), Ry = Math.min(H * .12, 90);
+  let best = 0, bestZ = -2;
+  cards.forEach((c, i) => {
+    const a = normDeg(i * orb.step + orb.rot) * Math.PI / 180;
+    const x = Math.sin(a) * Rx, z = Math.cos(a), y = (z - 1) * Ry + Ry * .6;   // 앞쪽 카드는 아래, 뒤쪽은 위
+
+    const s = base * (.56 + .44 * (z + 1) / 2);
+    c.style.transform = `translate(-50%,-50%) translate(${x.toFixed(1)}px,${y.toFixed(1)}px) scale(${s.toFixed(3)})`;
+    c.style.zIndex = Math.round((z + 1) * 100);
+    c.style.opacity = (.22 + .78 * Math.pow((z + 1) / 2, 1.6)).toFixed(3);
+    c.style.pointerEvents = z > -.3 ? 'auto' : 'none';
+    if(z > bestZ){ bestZ = z; best = i; }
+  });
+  const ring = stage.querySelector('.orbit-ring');
+  if(ring){ ring.style.width = `${Rx * 2}px`; ring.style.height = `${Ry * 2}px`; ring.style.transform = `translate(-50%,-50%) translateY(${(-Ry * .4 + cardH * base * .42).toFixed(1)}px)`; }
+  if(best !== orb.active || !cards[best]?.classList.contains('active')) orbitMark(best);
+}
+function orbitMark(i){
+  orb.active = i;
+  orbitCards().forEach((c, k) => c.classList.toggle('active', k === i));
+  document.querySelectorAll('.orbit-foot .dot').forEach((d, k) => { d.classList.toggle('on', k === i); d.setAttribute('aria-current', k === i ? 'true' : 'false'); });
+  const trip = homeTrips()[i];
   if(trip) state.homeTripId = trip.id;
 }
-function slideClick(i, id){
-  if(i !== carIdx){ carGo(i); return; }   // 옆 카드를 누르면 먼저 가운데로
-  if(id) go(id); else tripModal();
+// rot 값을 목표까지 부드럽게 이동
+function orbitAnimateTo(target, ms = 420){
+  cancelAnimationFrame(orb.anim);
+  const from = orb.rot, t0 = performance.now();
+  const ease = p => 1 - Math.pow(1 - p, 3);
+  const tick = now => {
+    const p = Math.min(1, (now - t0) / ms);
+    orb.rot = from + (target - from) * ease(p); orbitLayout();
+    if(p < 1) orb.anim = requestAnimationFrame(tick); else save();
+  };
+  orb.anim = requestAnimationFrame(tick);
 }
-function initCarousel(start){
-  const track = document.getElementById('carTrack');
-  if(!track) return;
-  let raf = 0;
-  track.addEventListener('scroll', () => {
-    cancelAnimationFrame(raf);
-    raf = requestAnimationFrame(() => {
-      const mid = track.scrollLeft + track.clientWidth / 2;
-      let best = 0, bestD = Infinity;
-      carSlides().forEach((s, k) => { const d = Math.abs(s.offsetLeft + s.offsetWidth / 2 - mid); if(d < bestD){ bestD = d; best = k; } });
-      if(best !== carIdx) carMark(best);
-    });
-  }, {passive:true});
-  requestAnimationFrame(() => carGo(start, true));
-  carMark(start);
+function orbitSnap(){ orbitAnimateTo(Math.round(orb.rot / orb.step) * orb.step); }
+function orbitGo(i){
+  const target = -i * orb.step;
+  orbitAnimateTo(orb.rot + normDeg(target - orb.rot));        // 가까운 방향으로 회전
 }
+function orbitStep(d){ orbitGo((orb.active + d + orb.n) % orb.n); }
+function orbitOpen(i){
+  const t = homeTrips()[i];
+  if(t) go(t.id); else tripModal();
+}
+function orbitDown(e){
+  if(e.button > 0 || e.target.closest('button')) return;     // 카드 안 버튼은 그대로 동작
+  const stage = e.currentTarget;
+  cancelAnimationFrame(orb.anim);
+  orb.drag = {x:e.clientX, lastX:e.clientX, lastT:performance.now(), moved:0, card:e.target.closest('.ocard')};
+  orb.vel = 0;
+  try{ stage.setPointerCapture(e.pointerId); }catch(err){}
+  stage.classList.add('grabbing');
+  const move = ev => {
+    const dr = orb.drag; if(!dr) return;
+    const now = performance.now(), dx = ev.clientX - dr.lastX, dt = Math.max(1, now - dr.lastT);
+    const Rx = Math.min(stage.clientWidth * .36, 420);
+    const dDeg = dx * (60 / Rx);                              // 궤도 반지름만큼 끌면 약 60° 회전
+    orb.rot += dDeg; orb.vel = orb.vel * .4 + (dDeg / dt * 16) * .6;
+    dr.moved += Math.abs(dx); dr.lastX = ev.clientX; dr.lastT = now;
+    orbitLayout();
+  };
+  const up = () => {
+    stage.removeEventListener('pointermove', move);
+    stage.removeEventListener('pointerup', up);
+    stage.removeEventListener('pointercancel', up);
+    stage.classList.remove('grabbing');
+    const dr = orb.drag; orb.drag = null;
+    if(dr.moved < 6){                                         // 거의 안 움직였으면 클릭으로 처리
+      if(!dr.card) return;
+      const i = Number(dr.card.dataset.i);
+      if(i === orb.active) orbitOpen(i); else orbitGo(i);
+      return;
+    }
+    if(performance.now() - dr.lastT > 90) orb.vel = 0;        // 멈췄다 놓으면 관성 없음
+    orbitInertia();
+  };
+  stage.addEventListener('pointermove', move);
+  stage.addEventListener('pointerup', up);
+  stage.addEventListener('pointercancel', up);
+}
+// 관성으로 미끄러지다가 느려지면 가장 가까운 카드에 스냅
+function orbitInertia(){
+  cancelAnimationFrame(orb.anim);
+  const tick = () => {
+    orb.rot += orb.vel; orb.vel *= .93; orbitLayout();
+    if(Math.abs(orb.vel) > .35) orb.anim = requestAnimationFrame(tick);
+    else orbitSnap();
+  };
+  orb.anim = requestAnimationFrame(tick);
+}
+window.addEventListener('resize', () => { if(document.getElementById('orbit')) orbitLayout(); });
 
 // 여행마다 고유한 커버 색상
 // 포근한 파스텔 톤 안에서만 고름 (피치, 살구, 버터, 세이지, 하늘, 로즈)
