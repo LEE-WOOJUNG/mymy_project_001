@@ -203,7 +203,7 @@ const WORLD_ROWS = [
   '21-25,38-41,57-65','21-25,38-40,57-65','21-23,38-39,57-58,61-64','21-22,63,69',
   '20-22,63,68','21-22,67','21,23','21'
 ];
-const MAP_PALETTE = ['#f7b3c7','#f9c3cf','#fbd7b5','#fde6a6','#c6ead6','#b3e0d0','#b6dcf3','#c4ccf2','#d3c3ef','#e5c3ea'];
+const MAP_PALETTE = ['#f2b8c9','#f5c7d1','#f6d7ba','#f6e3ad','#c9e7d6','#b6ddcf','#bbdbee','#c7ceef','#d4c6ec','#e3c6e7'];
 let _mapCache = '';
 function worldMapSVG(){
   if(_mapCache) return _mapCache;
@@ -224,12 +224,12 @@ function worldMapSVG(){
     const cx = (seoul[0] + x) / 2 + (i === 1 ? 70 : 0), cy = Math.min(seoul[1], y) + lift[i];
     return `<path id="route${i}" d="M${seoul[0]},${seoul[1]} Q${cx},${cy} ${x},${y}" />`;
   }).join('');
-  const pins = [seoul, ...dests].map(([x, y], i) => `<g transform="translate(${x},${y})"><circle r="${i ? 6 : 8}" fill="#fff" stroke="${i ? '#c2b0e3' : '#f2a6bd'}" stroke-width="3"/><circle r="${i ? 2.2 : 3}" fill="${i ? '#a48ccb' : '#ee8fab'}"/></g>`).join('');
+  const pins = [seoul, ...dests].map(([x, y], i) => `<g transform="translate(${x},${y})"><circle r="${i ? 6 : 8}" fill="#ffffff" stroke="${i ? '#c3b4df' : '#ecacbf'}" stroke-width="3"/><circle r="${i ? 2.2 : 3}" fill="${i ? '#a591c6' : '#e796ae'}"/></g>`).join('');
   const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const planes = reduce ? '' : [0, 2].map((r, k) => `<text font-size="16" dy="5" text-anchor="middle" fill="#a48ccb">✈<animateMotion dur="${10 + k * 4}s" repeatCount="indefinite" rotate="auto" begin="${k * 2}s"><mpath href="#route${r}"/></animateMotion></text>`).join('');
+  const planes = reduce ? '' : [0, 2].map((r, k) => `<text font-size="16" dy="5" text-anchor="middle" fill="#a591c6">✈<animateMotion dur="${10 + k * 4}s" repeatCount="indefinite" rotate="auto" begin="${k * 2}s"><mpath href="#route${r}"/></animateMotion></text>`).join('');
   _mapCache = `<svg viewBox="0 0 700 320" preserveAspectRatio="xMidYMid meet" role="img" aria-label="세계지도">
     <g opacity=".95">${dots}</g>
-    <g fill="none" stroke="#c2b0e3" stroke-width="2" stroke-dasharray="2 7" stroke-linecap="round">${routes}</g>
+    <g fill="none" stroke="#c3b4df" stroke-width="2" stroke-dasharray="2 7" stroke-linecap="round">${routes}</g>
     ${pins}${planes}
   </svg>`;
   return _mapCache;
@@ -238,7 +238,7 @@ function worldMapSVG(){
 function skyDecor(){
   const clouds = [[4,14,1],[78,10,.8],[86,62,.9],[10,70,.75],[60,4,.6]].map(([l,t,s], i) =>
     `<span class="cloud c${i}" style="left:${l}%;top:${t}%;--s:${s}"></span>`).join('');
-  const sparks = [[12,18,'#f7cf5a',18],[90,22,'#f2a6bd',14],[24,62,'#94cdec',14],[80,74,'#f7cf5a',20],[52,8,'#c2b0e3',12],[68,40,'#86cfae',12]].map(([l,t,c,z], i) =>
+  const sparks = [[12,18,'#ebc966',18],[90,22,'#ecacbf',14],[24,62,'#9bcbe5',14],[80,74,'#ebc966',20],[52,8,'#c3b4df',12],[68,40,'#8bcaad',12]].map(([l,t,c,z], i) =>
     `<span class="spark" style="left:${l}%;top:${t}%;color:${c};font-size:${z}px;animation-delay:${i * .5}s">✦</span>`).join('');
   return `<div class="sky" aria-hidden="true">${clouds}${sparks}</div>`;
 }
