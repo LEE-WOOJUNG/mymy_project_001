@@ -1,4 +1,22 @@
 /* 여행 기록 - 스타일 */
+
+/* ============ 웹폰트 (눈누) ============
+   큰 글씨: 밑미 폰트 © (주)밑미 · (주)보이저엑스
+   작은 글씨: 강원교육새음체 © 강원도교육청 · 헤움디자인 */
+@font-face{
+  font-family:'MitmiFont';
+  src:url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2402_1@1.0/Ownglyph_meetme-Rg.woff2') format('woff2');
+  font-weight:normal;font-display:swap;
+}
+@font-face{
+  font-family:'GangwonEducationSaeum';
+  src:url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2201-2@1.0/GangwonEduSaeeum_OTFMediumA.woff') format('woff');
+  font-weight:normal;font-display:swap;
+}
+:root{
+  --font-title:'MitmiFont',"Pretendard Variable",Pretendard,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --font-body:'GangwonEducationSaeum',"Pretendard Variable",Pretendard,-apple-system,"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;
+}
 /* ============ 화이트 메인 · 파스텔 포인트 (핑크 · 라벤더 · 하늘 · 민트 · 버터) ============ */
 :root{
   --bg:#ffffff; --bg-glow:#fdeef3; --bg-glow2:#eef6fd; --surface:#ffffff; --surface2:#f8f6fc; --surface3:#f0ecf7; --line:#efeaf6; --line-strong:#ded5ea;
@@ -36,7 +54,7 @@
 html,body{margin:0}
 body{background:radial-gradient(900px 520px at 100% -5%,var(--bg-glow),transparent 62%),radial-gradient(800px 500px at -5% 35%,var(--bg-glow2),transparent 62%),var(--bg);
   background-attachment:fixed;color:var(--text);
-  font:15px/1.6 "Pretendard Variable",Pretendard,-apple-system,"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",system-ui,sans-serif;
+  font:16px/1.6 var(--font-body);
   letter-spacing:-.01em;-webkit-font-smoothing:antialiased;min-height:100vh}
 button,input,select,textarea{font:inherit;color:inherit;letter-spacing:inherit}
 button{cursor:pointer}
@@ -388,3 +406,22 @@ dialog form{padding:26px;display:flex;flex-direction:column;max-height:calc(100v
   .btn.lg{padding:12px 20px;font-size:14.5px}
   .cloud{--s:.6 !important}
 }
+
+/* ============ 타이포 적용: 큰 글씨 = 밑미, 작은 글씨 = 강원교육새음 ============ */
+h1,h2,h3,.hero-title,.brand-name,.tbody .name,.month-title,#modalTitle,.trip-head h1,.section-head h2,.add-card b{
+  font-family:var(--font-title);font-weight:normal;letter-spacing:-.01em}
+.hero-title{font-size:clamp(38px,7vw,64px);line-height:1.15}
+.trip-head h1{font-size:27px !important}
+.tbody .name{font-size:24px}
+.month-title{font-size:20px}
+#modalTitle{font-size:22px}
+.section-head h2{font-size:25px}
+h2{font-size:22px} h3{font-size:18px}
+.brand-name{font-size:20px}/* 새음체는 글자가 작게 보여 기본 크기를 키움 */
+body{font-size:17px}
+.small,.muted.small,.tbody .dates,.hero-badge,.top-link,.cur-pick,.seg-ctl button,.exp-day,.sub-h{font-size:14.5px}
+.badge,.cell .stay,.cell .cnt,table.prep th,.home-note,label.f{font-size:13.5px}
+.cell .dn{font-size:15px}
+.hero-sub{font-size:18px}
+.btn{font-size:15px}.btn.sm{font-size:14px}.btn.lg{font-size:17px}
+input[type=text],input[type=number],input[type=date],input[type=time],input[type=datetime-local],select,textarea{font-size:16px}
