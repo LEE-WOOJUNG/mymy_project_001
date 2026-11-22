@@ -8,20 +8,7 @@
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-<div id="lock" class="lock">
-  <form class="lock-card" onsubmit="event.preventDefault();tryUnlock()">
-    <div class="lock-icon">✈</div>
-    <div class="eyebrow">Travel Journal</div>
-    <h1>여행 기록</h1>
-    <p class="lock-sub">비밀번호를 입력해 주세요</p>
-    <input type="password" id="pw" inputmode="numeric" autocomplete="current-password" placeholder="비밀번호" aria-label="비밀번호" autofocus>
-    <div class="lock-err" id="pwErr" aria-live="polite"></div>
-    <button type="submit" class="btn primary lock-btn">들어가기</button>
-    <button type="button" class="hint-toggle" onclick="toggleHint()">힌트 보기</button>
-    <div class="hint" id="hint" hidden>Our beginning</div>
-  </form>
-</div>
-<div class="wrap" id="app" hidden></div>
+<div class="wrap" id="app"></div>
 
 <dialog id="modal">
   <form id="modalForm">

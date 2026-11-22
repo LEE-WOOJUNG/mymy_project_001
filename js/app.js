@@ -898,40 +898,6 @@ document.getElementById('importFile').addEventListener('change', async e => {
 });
 
 // 다른 탭에서 수정했을 때 동기화
-window.addEventListener('storage', e => { if(e.key === KEY && unlocked){ state = load(); render(); } });
+window.addEventListener('storage', e => { if(e.key === KEY){ state = load(); render(); } });
 
-/* ========== 비밀번호 잠금 ========== */
-// 비밀번호 원문 대신 해시값만 저장
-const PW_HASH = '9g0ikvbcnx';
-const UNLOCK_KEY = 'travelLog.unlocked';
-let unlocked = false;
-function pwHash(str, seed = 7){
-  let h1 = 0xdeadbeef ^ seed, h2 = 0x41c6ce57 ^ seed;
-  for(let i = 0, ch; i < str.length; i++){ ch = str.charCodeAt(i); h1 = Math.imul(h1 ^ ch, 2654435761); h2 = Math.imul(h2 ^ ch, 1597334677); }
-  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507); h1 ^= Math.imul(h2 ^ (h2 >>> 13), 3266489909);
-  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507); h2 ^= Math.imul(h1 ^ (h1 >>> 13), 3266489909);
-  return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(36);
-}
-function unlock(){
-  unlocked = true;
-  try{ sessionStorage.setItem(UNLOCK_KEY, PW_HASH); }catch(e){}
-  document.getElementById('lock').hidden = true;
-  document.getElementById('app').hidden = false;
-  render();
-}
-function tryUnlock(){
-  const inp = document.getElementById('pw'), err = document.getElementById('pwErr');
-  if(pwHash(inp.value.trim()) === PW_HASH){ unlock(); return; }
-  err.textContent = inp.value ? '비밀번호가 맞지 않아요' : '비밀번호를 입력해 주세요';
-  const card = document.querySelector('.lock-card');
-  card.classList.remove('shake'); void card.offsetWidth; card.classList.add('shake');
-  inp.select();
-}
-function toggleHint(){
-  const h = document.getElementById('hint'), b = document.querySelector('.hint-toggle');
-  h.hidden = !h.hidden; b.textContent = h.hidden ? '힌트 보기' : '힌트 숨기기';
-}
-// 같은 탭에서 새로고침할 때는 다시 묻지 않음 (창을 닫았다 열면 다시 입력)
-let already = false;
-try{ already = sessionStorage.getItem(UNLOCK_KEY) === PW_HASH; }catch(e){}
-if(already) unlock(); else document.getElementById('pw').focus();
+render();
