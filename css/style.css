@@ -475,3 +475,118 @@ body.home-mode .wrap{padding:12px 16px;height:100vh;height:100dvh;max-width:none
   .home-map{top:50%;width:175vw;opacity:.6}
 }
 .home .hero-title{font-size:clamp(34px,6.5vw,58px)}
+
+/* ============ 웹 · 앱 공통 정리 ============ */
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{-webkit-tap-highlight-color:transparent}
+.topbar{position:relative;top:0}
+.tab-ic{margin-right:4px}
+table.prep td.chk label{display:inline-flex;align-items:center;gap:4px;cursor:pointer}
+table.prep td.chk .who{display:none}
+.trip-head > div:nth-child(2){min-width:0}
+.trip-head h1{overflow-wrap:anywhere}
+.stay-row b{min-width:0;overflow-wrap:anywhere}
+.tl-acts{display:flex}
+
+/* ============ 앱 화면(폰) 최적화 ============ */
+@media (max-width:640px){
+  /* 안전 영역(노치·홈 바) 고려 */
+  body:not(.home-mode) .wrap{padding:calc(8px + env(safe-area-inset-top)) 12px calc(104px + env(safe-area-inset-bottom))}
+  body.home-mode .wrap{padding:calc(8px + env(safe-area-inset-top)) 10px calc(6px + env(safe-area-inset-bottom))}
+  .topbar{margin-bottom:12px}
+  .top-link{font-size:13px;padding:8px}
+  .icon-btn{width:38px;height:38px}
+  .panel{padding:16px;border-radius:22px}
+  h2{font-size:19px} h3{font-size:16.5px}
+
+  /* 여행 제목 영역: 한 줄에 ← 제목 · D-day · ✎ */
+  .trip-head{flex-wrap:nowrap;align-items:flex-start;gap:10px;margin-bottom:14px}
+  .trip-head .back{width:40px;height:40px;flex:none}
+  .trip-head > div:nth-child(2){flex:1}
+  .trip-head h1{font-size:20px !important;line-height:1.3}
+  .trip-head .meta{font-size:12.5px;line-height:1.45}
+  .trip-head .spacer{display:none}
+  .trip-head .badge{flex:none;margin-top:8px}
+  .trip-head > .icon-btn{flex:none;margin-top:2px}
+
+  /* 탭 → 화면 아래 고정 탭 바 (엄지로 누르기 쉽게) */
+  .tabs{position:fixed;left:10px;right:10px;top:auto;bottom:calc(10px + env(safe-area-inset-bottom));margin:0;z-index:40;border-radius:26px;padding:6px;
+    background:color-mix(in srgb,var(--surface) 92%,transparent);box-shadow:0 10px 30px -10px rgba(110,90,150,.35)}
+  .tab{display:flex;flex-direction:column;align-items:center;gap:1px;padding:7px 2px;border-radius:20px;font-size:12.5px}
+  .tab-ic{margin:0;font-size:19px;line-height:1.1}
+
+  /* 캘린더 */
+  .cal{gap:4px}
+  .cell{min-height:56px;padding:5px 4px;border-radius:14px;gap:1px}
+  .cell .dn{font-size:13.5px}
+  .cell .stay em,.cell .cnt em{display:none}
+  .cell .stay i{font-style:normal;font-size:12px}
+  .cell .cnt{font-size:11px}
+  .stay-box{padding:12px 14px}
+  .stay-row{flex-wrap:nowrap;align-items:flex-start}
+  .tl-item{grid-template-columns:46px 16px 1fr auto;gap:8px}
+  .tl-time{font-size:13px}
+  .tl-acts{flex-direction:column}
+  .tl-acts .icon-btn{width:34px;height:34px}
+
+  /* 준비 표 → 항목별 카드 */
+  table.prep thead{display:none}
+  table.prep,table.prep tbody{display:block}
+  table.prep tr.cat{display:block}
+  table.prep tr.cat td{display:block;padding:16px 4px 4px}
+  table.prep tr:not(.cat){display:flex;flex-wrap:wrap;align-items:center;border-top:1px solid var(--line);padding:8px 0 10px}
+  table.prep tr:not(.cat) td{border:none;padding:2px 3px;background:none !important}
+  table.prep .grip-cell{order:0;width:30px;flex:none}
+  table.prep td.item{order:1;flex:1 1 calc(100% - 118px);min-width:0;padding:6px 4px;font-size:15px;line-height:1.4}
+  table.prep td.acts{width:84px;display:flex;justify-content:flex-end}
+  table.prep td.chk{margin-top:4px}
+  table.prep td.acts{order:2;flex:none}
+  table.prep td.chk{order:3;flex:none}
+  table.prep td.chk:nth-child(3){margin-left:30px}
+  table.prep td.chk label{padding:5px 10px 5px 6px;border-radius:99px;background:var(--surface2)}
+  table.prep td.chk .who{display:inline;font-size:13px;color:var(--text2)}
+  table.prep td.memo-cell{order:4;flex:1 1 100%;width:auto;min-width:0;padding:6px 0 0 30px}
+  .memo-in{background:var(--surface2) !important;border-radius:12px !important}
+  table.prep input[type=checkbox]{width:22px;height:22px}
+  .table-wrap{overflow:visible;margin:0}
+
+  /* 항공권 */
+  .flight-head{padding:12px 14px;gap:6px 8px}
+  .flight > .seg,.flight > .layover,.flight > .small{margin-left:14px;margin-right:14px}
+  .seg{gap:6px;padding:12px 0}
+  .seg .ap{font-size:24px}
+  .seg .mid{min-width:72px;font-size:11.5px}
+  .seg .t{font-size:12.5px}
+
+  /* 경비 */
+  .sum-grid{gap:10px;margin-bottom:14px}
+  .sum{padding:14px;border-radius:18px}
+  .sum .v{font-size:21px}
+  .bar-row{grid-template-columns:76px 1fr auto;gap:8px}
+  .exp{gap:10px}
+  .exp .ic{width:38px;height:38px;font-size:17px}
+  .exp > div:last-child{display:flex;flex-direction:column}
+  .seg-ctl button{padding:6px 11px}
+
+  /* 입력창: 16px 이상이어야 iOS에서 확대되지 않음 */
+  input[type=text],input[type=number],input[type=date],input[type=time],input[type=datetime-local],select,textarea{font-size:16px !important;padding:11px 13px}
+  label.f > input,label.f > select,label.f > textarea{font-size:16px}
+  .grid2{grid-template-columns:1fr 1fr}
+  .grid3{grid-template-columns:1fr 1fr}
+  .grid3 > :last-child{grid-column:1 / -1}
+
+  /* 팝업 → 아래에서 올라오는 시트 */
+  dialog{width:100%;max-width:100%;margin:auto 0 0;border-radius:28px 28px 0 0;max-height:92vh;max-height:92dvh;border-bottom:none}
+  dialog[open]{animation:sheet .28s cubic-bezier(.2,.9,.3,1)}
+  @keyframes sheet{from{transform:translateY(40px);opacity:.4}to{transform:none;opacity:1}}
+  dialog form{padding:20px 18px calc(16px + env(safe-area-inset-bottom));max-height:92dvh}
+  dialog form::before{content:"";display:block;width:42px;height:5px;border-radius:9px;background:var(--line-strong);margin:-8px auto 12px}
+  .modal-actions .btn{flex:1;padding:13px}
+  .toast{bottom:calc(96px + env(safe-area-inset-bottom))}
+  body.home-mode .toast{bottom:calc(70px + env(safe-area-inset-bottom))}
+}
+@media (max-width:360px){
+  .tab{font-size:11.5px}
+  .grid2{grid-template-columns:1fr}
+  .orbit-foot{gap:8px}
+}

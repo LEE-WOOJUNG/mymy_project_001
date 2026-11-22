@@ -505,7 +505,7 @@ function renderTrip(t){
       ${dday(t) ? `<span class="badge">${dday(t)}</span>` : ''}
       <button class="icon-btn" title="여행 정보 수정" onclick="tripModal('${t.id}')">✎</button>
     </div>
-    <div class="tabs">${TABS.map(([k,l]) => `<button class="tab ${state.tab===k?'on':''}" onclick="setTab('${k}')">${l}</button>`).join('')}</div>
+    <nav class="tabs" aria-label="여행 메뉴">${TABS.map(([k,l]) => { const [ic, ...rest] = l.split(' '); return `<button class="tab ${state.tab===k?'on':''}" ${state.tab===k?'aria-current="page"':''} onclick="setTab('${k}');window.scrollTo(0,0)"><span class="tab-ic" aria-hidden="true">${ic}</span><span class="tab-tx">${rest.join(' ')}</span></button>`; }).join('')}</nav>
     ${body}
   `;
 }
@@ -522,16 +522,23 @@ function renderSchedule(t){
   const s = pd(t.start), e = pd(t.end);
   for(let y = s.getFullYear(), m = s.getMonth(); y < e.getFullYear() || (y === e.getFullYear() && m <= e.getMonth()); m === 11 ? (y++, m = 0) : m++){
     const first = new Date(y,m,1), last = new Date(y,m+1,0).getDate();
-    let cells = WD.map((w,i) => `<div class="wd ${i===0?'sun':''}">${w}</div>`).join('');
-    for(let i = 0; i < first.getDay(); i++) cells += '<div></div>';
+    // 여행 날짜가 하나도 없는 주는 접어서 화면을 짧게 (앱 화면 배려)
+    const slots = [];
+    for(let i = 0; i < first.getDay(); i++) slots.push({html:'<div></div>', inT:false});
     for(let d = 1; d <= last; d++){
       const k = ds(new Date(y,m,d)); const inT = k >= t.start && k <= t.end;
       const stay = t.stays[k]; const n = (t.schedules[k]||[]).length;
-      cells += `<button class="cell ${inT?'in':''} ${k===sel?'sel':''} ${k===today?'today':''}" ${inT ? `onclick="selectDate('${k}')"` : 'disabled'}>
+      slots.push({inT, html:`<button class="cell ${inT?'in':''} ${k===sel?'sel':''} ${k===today?'today':''}" ${inT ? `onclick="selectDate('${k}')" aria-label="${fmtDate(k)}${stay ? ' · 숙소 ' + esc(stay.name) : ''}${n ? ' · 일정 ' + n + '개' : ''}"` : 'disabled'}>
         <span class="dn">${d}</span>
-        ${inT && stay ? `<span class="stay">🏨 ${esc(stay.name)}</span>` : ''}
-        ${inT && n ? `<span class="cnt">• 일정 ${n}</span>` : ''}
-      </button>`;
+        ${inT && stay ? `<span class="stay"><i>🏨</i><em>${esc(stay.name)}</em></span>` : ''}
+        ${inT && n ? `<span class="cnt">•<em> 일정</em> ${n}</span>` : ''}
+      </button>`});
+    }
+    while(slots.length % 7) slots.push({html:'<div></div>', inT:false});
+    let cells = WD.map((w,i) => `<div class="wd ${i===0?'sun':''}">${w}</div>`).join('');
+    for(let w = 0; w < slots.length; w += 7){
+      const week = slots.slice(w, w + 7);
+      if(week.some(c => c.inT)) cells += week.map(c => c.html).join('');
     }
     months += `<div class="month"><div class="month-title">${y}년 ${m+1}월</div><div class="cal">${cells}</div></div>`;
   }
@@ -542,7 +549,7 @@ function renderSchedule(t){
   return `
     <div class="sched">
       <div class="panel">${months}
-        <div class="muted small">날짜를 누르면 오른쪽에서 숙소와 일정을 기록할 수 있어요.</div>
+        <div class="muted small">날짜를 누르면 그날의 숙소와 일정을 기록할 수 있어요.</div>
       </div>
       <div class="panel">
         <div class="row">
@@ -554,7 +561,7 @@ function renderSchedule(t){
         </div>
         <div class="stay-box">
           ${stay ? `
-            <div class="row"><b>🏨 ${esc(stay.name)}</b><div class="spacer"></div>
+            <div class="row stay-row"><b>🏨 ${esc(stay.name)}</b><div class="spacer"></div>
               <button class="icon-btn" onclick="stayModal()">✎</button>
               <button class="icon-btn del" onclick="delStay()">🗑</button></div>
             ${stay.addr ? `<div class="small">📍 ${esc(stay.addr)}</div>` : ''}
@@ -571,7 +578,7 @@ function renderSchedule(t){
               <div class="tl-body"><b>${esc(it.title)}</b>
                 ${it.place ? `<div class="small">📍 ${esc(it.place)}</div>` : ''}
                 ${it.memo ? `<div class="memo">${esc(it.memo)}</div>` : ''}</div>
-              <div><button class="icon-btn" onclick="schedModal('${it.id}')">✎</button><button class="icon-btn del" onclick="delSched('${it.id}')">🗑</button></div>
+              <div class="tl-acts"><button class="icon-btn" aria-label="일정 수정" onclick="schedModal('${it.id}')">✎</button><button class="icon-btn del" aria-label="일정 삭제" onclick="delSched('${it.id}')">🗑</button></div>
             </div>`).join('')
           : `<div class="muted small" style="padding:20px 0;text-align:center">등록된 일정이 없어요</div>`}
         </div>
@@ -645,7 +652,7 @@ function renderPrep(t){
       <tr class="${isDone(t,it)?'done':''}" data-id="${it.id}" data-cat="${ci}">
         <td class="grip-cell">${list.length > 1 ? `<button type="button" class="drag-handle" title="꾹 눌러서 끌어 옮기기" aria-label="${esc(it.text)} 순서 옮기기 (방향키로도 이동)" onkeydown="handleKey(event,'${it.id}')"><svg width="12" height="16" viewBox="0 0 12 16" aria-hidden="true"><g fill="currentColor"><circle cx="3" cy="3" r="1.5"/><circle cx="9" cy="3" r="1.5"/><circle cx="3" cy="8" r="1.5"/><circle cx="9" cy="8" r="1.5"/><circle cx="3" cy="13" r="1.5"/><circle cx="9" cy="13" r="1.5"/></g></svg></button>` : ''}</td>
         <td class="item" title="클릭하면 전원 체크/해제" onclick="toggleAll('${it.id}')">${esc(it.text)}</td>
-        ${t.people.map((p,i) => `<td><input type="checkbox" aria-label="${esc(p)}" ${it.checks[p]?'checked':''} onchange="togglePrep('${it.id}',${i})"></td>`).join('')}
+        ${t.people.map((p,i) => `<td class="chk"><label><input type="checkbox" aria-label="${esc(p)}" ${it.checks[p]?'checked':''} onchange="togglePrep('${it.id}',${i})"><span class="who">${esc(p)}</span></label></td>`).join('')}
         <td class="memo-cell"><input type="text" class="memo-in" value="${esc(it.memo)}" placeholder="메모" onchange="setPrepMemo('${it.id}',this.value)" onkeydown="enter(event,()=>this.blur())"></td>
         <td class="acts"><button class="icon-btn" onclick="prepModal('${it.id}')">✎</button><button class="icon-btn del" onclick="delPrep('${it.id}')">🗑</button></td>
       </tr>`).join('');
