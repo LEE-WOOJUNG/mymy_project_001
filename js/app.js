@@ -665,7 +665,8 @@ function renderPrep(t){
   cats.forEach((c, ci) => {
     const list = t.prep.filter(i => i.cat === c);
     if(!list.length) return;
-    rows += `<tr class="cat"><td colspan="${t.people.length+4}">${esc(c)}</td></tr>`;
+    const pi = prepCats(t).indexOf(c);
+    rows += `<tr class="cat"><td colspan="${t.people.length+4}"><span class="cat-title">${esc(c)}</span>${pi >= 0 ? `<span class="cat-acts"><button class="icon-btn" title="분류 이름 수정" aria-label="${esc(c)} 분류 이름 수정" onclick="catModal(${pi})">${IC.edit}</button><button class="icon-btn del" title="분류 삭제" aria-label="${esc(c)} 분류 삭제" onclick="delCat(${pi})">${IC.trash}</button></span>` : ''}</td></tr>`;
     rows += list.map(it => `
       <tr class="${isDone(t,it)?'done':''}" data-id="${it.id}" data-cat="${ci}">
         <td class="grip-cell">${list.length > 1 ? `<button type="button" class="drag-handle" title="꾹 눌러서 끌어 옮기기" aria-label="${esc(it.text)} 순서 옮기기 (방향키로도 이동)" onkeydown="handleKey(event,'${it.id}')"><svg width="12" height="16" viewBox="0 0 12 16" aria-hidden="true"><g fill="currentColor"><circle cx="3" cy="3" r="1.5"/><circle cx="9" cy="3" r="1.5"/><circle cx="3" cy="8" r="1.5"/><circle cx="9" cy="8" r="1.5"/><circle cx="3" cy="13" r="1.5"/><circle cx="9" cy="13" r="1.5"/></g></svg></button>` : ''}</td>
@@ -679,17 +680,10 @@ function renderPrep(t){
     <div class="panel prep-setup">
       <div class="setup-line"><span class="setup-lbl">${IC.users}인원</span>
         <div class="chips">${t.people.map((p,i) => `<span class="chip" data-i="${esc([...p][0] || '')}">${esc(p)}<button title="삭제" aria-label="${esc(p)} 삭제" onclick="delPerson(${i})">✕</button></span>`).join('')}</div>
-      </div>
-      <div class="setup-line"><span class="setup-lbl">${IC.tag}분류</span>
-        <div class="chips">${prepCats(t).map((c,i) => `<span class="chip tag"><span class="tag-name" title="이름 수정" onclick="catModal(${i})">${esc(c)}</span><span class="tag-n">${t.prep.filter(x => x.cat === c).length}</span><button title="삭제" aria-label="${esc(c)} 분류 삭제" onclick="delCat(${i})">✕</button></span>`).join('')}</div>
-      </div>
-      <div class="setup-add">
-        <div class="seg-ctl" role="group" aria-label="추가할 종류">
-          <button class="${setupKind()==='person'?'on':''}" onclick="setSetupKind('person')">인원</button>
-          <button class="${setupKind()==='cat'?'on':''}" onclick="setSetupKind('cat')">분류</button>
+        <div class="setup-btns">
+          <button class="btn sm" onclick="personAddModal()">+ 인원</button>
+          <button class="btn sm" onclick="catManager()">+ 분류</button>
         </div>
-        <input type="text" id="setupInput" placeholder="${setupKind()==='person' ? '함께 가는 사람 이름' : '새 분류 이름'}" onkeydown="enter(event,setupAdd)">
-        <button class="btn sm" onclick="setupAdd()">추가</button>
       </div>
     </div>
     <div class="panel prep-panel">
@@ -705,23 +699,38 @@ function renderPrep(t){
           <tbody>${rows || `<tr><td colspan="${t.people.length+4}" class="muted" style="padding:24px">준비 사항을 추가해 보세요</td></tr>`}</tbody>
         </table>
       </div>
-      <div class="muted small prep-help">항목 이름을 누르면 전원 체크 · ⠿를 꾹 눌러 끌면 순서 이동 · 분류 이름을 누르면 수정</div>
+      <div class="muted small prep-help">항목 이름을 누르면 전원 체크 · ⠿를 꾹 눌러 끌면 순서 이동</div>
     </div>`;
 }
-// 인원 · 분류를 한 줄에서 추가
-const setupKind = () => state.setupKind === 'cat' ? 'cat' : 'person';
-function setSetupKind(k){ state.setupKind = k; render(); document.getElementById('setupInput')?.focus(); }
-function setupAdd(){
-  const inp = document.getElementById('setupInput'), v = inp.value.trim();
-  if(!v){ inp.focus(); return; }
-  if(setupKind() === 'cat') addCat(v); else addPerson(v);
-}
-function addPerson(v){
+// 인원 추가 (팝업)
+function personAddModal(){
   const t = curTrip();
-  if(t.people.includes(v)){ toast('이미 있는 이름이에요'); return; }
-  t.people.push(v); render();
-  toast(`'${v}'님을 추가했어요`);
-  document.getElementById('setupInput')?.focus();
+  openModal('인원 추가', `
+    <label class="f">이름<input type="text" name="name" required maxlength="12" placeholder="함께 가는 사람 이름"></label>
+    <div class="muted small">추가하면 준비 사항마다 이 사람의 체크 칸이 생겨요.</div>
+  `, d => {
+    const v = d.name.trim();
+    if(!v) return false;
+    if(t.people.includes(v)){ toast('이미 있는 이름이에요'); return false; }
+    t.people.push(v); toast(`'${v}'님을 추가했어요`);
+  }, '추가');
+}
+// 분류 추가 · 관리 (팝업)
+function catManager(){
+  const t = curTrip(), cats = prepCats(t);
+  openModal('분류 추가 · 관리', `
+    <label class="f">새 분류<input type="text" name="name" maxlength="12" placeholder="예) 쇼핑 리스트"></label>
+    <div class="cat-list">
+      ${cats.map((c, i) => `<div class="cat-row"><span class="cat-name">${esc(c)}</span><span class="muted small">${t.prep.filter(x => x.cat === c).length}개</span>
+        <button type="button" class="icon-btn" aria-label="${esc(c)} 이름 수정" onclick="catModal(${i})">${IC.edit}</button>
+        <button type="button" class="icon-btn del" aria-label="${esc(c)} 삭제" onclick="delCat(${i})">${IC.trash}</button></div>`).join('')}
+    </div>
+  `, d => {
+    const v = (d.name || '').trim();
+    if(!v) return;                                   // 이름 없이 누르면 그냥 닫기
+    if(cats.includes(v)){ toast('이미 있는 분류예요'); return false; }
+    cats.push(v); state.lastCat = v; toast(`'${v}' 분류를 추가했어요`);
+  }, '추가');
 }
 function delPerson(i){
   const t = curTrip();
@@ -741,13 +750,6 @@ function addPrep(){
   render();
   document.getElementById('newCat').value = cat;
   document.getElementById('newPrep').focus();
-}
-function addCat(v){
-  const t = curTrip();
-  if(prepCats(t).includes(v)){ toast('이미 있는 분류예요'); return; }
-  prepCats(t).push(v); state.lastCat = v; render();
-  toast(`'${v}' 분류를 추가했어요`);
-  document.getElementById('setupInput')?.focus();
 }
 function catModal(i){
   const t = curTrip(), old = prepCats(t)[i];

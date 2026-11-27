@@ -851,3 +851,29 @@ table.prep .grip-cell{width:24px}
   table.prep td.memo-cell.has .memo-in{background:transparent !important;border-color:transparent !important;padding:1px 0 !important;font-size:12.5px !important;color:var(--muted)}
   table.prep td.memo-cell.has .memo-in:focus{background:var(--surface2) !important;padding:3px 8px !important;color:var(--text)}
 }table.prep input.memo-in{font-size:12.5px;padding:3px 8px}
+
+/* 준비: 인원 줄 + 추가 버튼, 분류 관리 */
+.prep-setup{gap:0}
+.setup-line .chips{flex:1}
+.setup-btns{flex:none;display:flex;gap:6px;margin-left:auto}
+.setup-btns .btn{padding:6px 10px;font-size:12.5px}
+table.prep tr.cat td{display:table-cell}
+table.prep tr.cat .cat-title{vertical-align:middle}
+.cat-acts{display:inline-flex;gap:0;margin-left:4px;vertical-align:middle;opacity:.55;transition:opacity .2s}
+tr.cat:hover .cat-acts,.cat-acts:focus-within{opacity:1}
+.cat-acts .icon-btn{width:24px;height:24px}
+.cat-acts .icon-btn .ic{width:13px;height:13px}
+.cat-list{display:flex;flex-direction:column;border:1px solid var(--hair);border-radius:12px;overflow:hidden;margin-top:4px}
+.cat-row{display:flex;align-items:center;gap:8px;padding:4px 6px 4px 12px;border-top:1px solid var(--hair);font-size:14px}
+.cat-row:first-child{border-top:none}
+.cat-row .cat-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cat-row .icon-btn{width:30px;height:30px}
+.cat-row .icon-btn .ic{width:15px;height:15px}
+@media (max-width:640px){
+  .setup-line{gap:8px}
+  .setup-lbl{width:auto}
+  .setup-btns .btn{padding:5px 8px;font-size:12px}
+  table.prep tr.cat td{display:flex;align-items:center}
+  .cat-acts{opacity:.7}
+}
+@media (hover:none){.cat-acts{opacity:.7}}
