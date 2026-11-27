@@ -27,7 +27,8 @@ const IC_PATHS = {
   check:'<rect x="4" y="4" width="16" height="16" rx="5"/><path d="M8.5 12.3l2.4 2.4 4.6-5"/>',
   users:'<circle cx="9" cy="8.5" r="3.2"/><path d="M3.5 19c.6-3 2.8-4.6 5.5-4.6s4.9 1.6 5.5 4.6"/><path d="M16 5.6a3 3 0 010 5.8M17.6 14.7c1.5.6 2.5 2 2.9 4.3"/>',
   coin:'<circle cx="12" cy="12" r="8"/><path d="M14.4 9.4c-.5-.8-1.3-1.2-2.4-1.2-1.4 0-2.4.7-2.4 1.9s1 1.6 2.4 1.9 2.4.8 2.4 1.9-1 2-2.4 2c-1.1 0-2-.4-2.5-1.2M12 6.6v1.6M12 15.8v1.6"/>',
-  pin:'<path d="M12 21s-6.5-5.8-6.5-11A6.5 6.5 0 0118.5 10c0 5.2-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.4"/>'
+  pin:'<path d="M12 21s-6.5-5.8-6.5-11A6.5 6.5 0 0118.5 10c0 5.2-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.4"/>',
+  tag:'<path d="M3.5 12V5.5a2 2 0 012-2H12a2 2 0 011.4.6l6.5 6.5a2 2 0 010 2.8l-6.6 6.6a2 2 0 01-2.8 0l-6.4-6.4A2 2 0 013.5 12z"/><circle cx="8.3" cy="8.3" r="1.4"/>'
 };
 const IC = Object.fromEntries(Object.entries(IC_PATHS).map(([k, p]) =>
   [k, `<svg class="ic ic-${k}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`]));
@@ -670,29 +671,30 @@ function renderPrep(t){
         <td class="grip-cell">${list.length > 1 ? `<button type="button" class="drag-handle" title="꾹 눌러서 끌어 옮기기" aria-label="${esc(it.text)} 순서 옮기기 (방향키로도 이동)" onkeydown="handleKey(event,'${it.id}')"><svg width="12" height="16" viewBox="0 0 12 16" aria-hidden="true"><g fill="currentColor"><circle cx="3" cy="3" r="1.5"/><circle cx="9" cy="3" r="1.5"/><circle cx="3" cy="8" r="1.5"/><circle cx="9" cy="8" r="1.5"/><circle cx="3" cy="13" r="1.5"/><circle cx="9" cy="13" r="1.5"/></g></svg></button>` : ''}</td>
         <td class="item" title="클릭하면 전원 체크/해제" onclick="toggleAll('${it.id}')">${esc(it.text)}</td>
         ${t.people.map((p,i) => `<td class="chk"><label><input type="checkbox" aria-label="${esc(p)}" ${it.checks[p]?'checked':''} onchange="togglePrep('${it.id}',${i})"><span class="who">${esc(p)}</span></label></td>`).join('')}
-        <td class="memo-cell"><input type="text" class="memo-in" value="${esc(it.memo)}" placeholder="메모" onchange="setPrepMemo('${it.id}',this.value)" onkeydown="enter(event,()=>this.blur())"></td>
+        <td class="memo-cell ${it.memo ? 'has' : ''}"><input type="text" class="memo-in" value="${esc(it.memo)}" placeholder="메모" onchange="setPrepMemo('${it.id}',this.value)" onkeydown="enter(event,()=>this.blur())"></td>
         <td class="acts"><button class="icon-btn" onclick="prepModal('${it.id}')">${IC.edit}</button><button class="icon-btn del" onclick="delPrep('${it.id}')">${IC.trash}</button></td>
       </tr>`).join('');
   });
   return `
-    <div class="panel" style="margin-bottom:14px">
-      <div class="row" style="margin-bottom:10px"><h3>👥 인원</h3><span class="muted small">사람마다 체크 칸이 생겨요</span></div>
-      <div class="people">
-        ${t.people.map((p,i) => `<span class="chip" data-i="${esc([...p][0] || '')}">${esc(p)}<button title="삭제" onclick="delPerson(${i})">✕</button></span>`).join('')}
-        <input type="text" id="newPerson" placeholder="이름 추가" style="width:130px" onkeydown="enter(event,addPerson)">
-        <button class="btn sm" onclick="addPerson()">추가</button>
+    <div class="panel prep-setup">
+      <div class="setup-line"><span class="setup-lbl">${IC.users}인원</span>
+        <div class="chips">${t.people.map((p,i) => `<span class="chip" data-i="${esc([...p][0] || '')}">${esc(p)}<button title="삭제" aria-label="${esc(p)} 삭제" onclick="delPerson(${i})">✕</button></span>`).join('')}</div>
       </div>
-      <div class="row" style="margin:18px 0 10px"><h3>🏷️ 분류</h3><span class="muted small">이름을 누르면 수정, ✕를 누르면 삭제돼요</span></div>
-      <div class="people">
-        ${prepCats(t).map((c,i) => `<span class="chip tag"><span class="tag-name" title="이름 수정" onclick="catModal(${i})">${esc(c)}</span><span class="tag-n">${t.prep.filter(x => x.cat === c).length}</span><button title="삭제" onclick="delCat(${i})">✕</button></span>`).join('')}
-        <input type="text" id="newCatName" placeholder="분류 추가" style="width:130px" onkeydown="enter(event,addCat)">
-        <button class="btn sm" onclick="addCat()">추가</button>
+      <div class="setup-line"><span class="setup-lbl">${IC.tag}분류</span>
+        <div class="chips">${prepCats(t).map((c,i) => `<span class="chip tag"><span class="tag-name" title="이름 수정" onclick="catModal(${i})">${esc(c)}</span><span class="tag-n">${t.prep.filter(x => x.cat === c).length}</span><button title="삭제" aria-label="${esc(c)} 분류 삭제" onclick="delCat(${i})">✕</button></span>`).join('')}</div>
+      </div>
+      <div class="setup-add">
+        <div class="seg-ctl" role="group" aria-label="추가할 종류">
+          <button class="${setupKind()==='person'?'on':''}" onclick="setSetupKind('person')">인원</button>
+          <button class="${setupKind()==='cat'?'on':''}" onclick="setSetupKind('cat')">분류</button>
+        </div>
+        <input type="text" id="setupInput" placeholder="${setupKind()==='person' ? '함께 가는 사람 이름' : '새 분류 이름'}" onkeydown="enter(event,setupAdd)">
+        <button class="btn sm" onclick="setupAdd()">추가</button>
       </div>
     </div>
-    <div class="panel">
-      <div class="row" style="margin-bottom:8px"><h3>준비 사항</h3><div class="spacer"></div><b>${done} / ${total}</b><span class="muted small">완료 (${pct}%)</span></div>
-      <div class="progress" style="margin-bottom:14px"><div style="width:${pct}%"></div></div>
-      <div class="row" style="margin-bottom:6px">
+    <div class="panel prep-panel">
+      <div class="prep-head"><h3>준비 사항</h3><span class="prep-count"><b>${done}</b>/${total}</span><div class="progress"><div style="width:${pct}%"></div></div><span class="muted small">${pct}%</span></div>
+      <div class="row prep-add">
         <select id="newCat" style="width:auto" onchange="state.lastCat=this.value">${prepCats(t).map(c => `<option ${c===state.lastCat?'selected':''}>${esc(c)}</option>`).join('')}</select>
         <input type="text" id="newPrep" placeholder="준비할 것 입력 후 Enter" style="flex:1;min-width:160px" onkeydown="enter(event,addPrep)">
         <button class="btn primary sm" onclick="addPrep()">추가</button>
@@ -703,16 +705,23 @@ function renderPrep(t){
           <tbody>${rows || `<tr><td colspan="${t.people.length+4}" class="muted" style="padding:24px">준비 사항을 추가해 보세요</td></tr>`}</tbody>
         </table>
       </div>
-      <div class="muted small" style="margin-top:8px">항목 이름을 누르면 전원 한 번에 체크/해제돼요. 모두 체크되면 완료로 표시됩니다.<br>왼쪽 ⠿ 아이콘을 꾹 누른 채 끌면 같은 분류 안에서 순서를 바꿀 수 있어요.</div>
+      <div class="muted small prep-help">항목 이름을 누르면 전원 체크 · ⠿를 꾹 눌러 끌면 순서 이동 · 분류 이름을 누르면 수정</div>
     </div>`;
 }
-function addPerson(){
-  const t = curTrip(), inp = document.getElementById('newPerson'), v = inp.value.trim();
+// 인원 · 분류를 한 줄에서 추가
+const setupKind = () => state.setupKind === 'cat' ? 'cat' : 'person';
+function setSetupKind(k){ state.setupKind = k; render(); document.getElementById('setupInput')?.focus(); }
+function setupAdd(){
+  const inp = document.getElementById('setupInput'), v = inp.value.trim();
   if(!v){ inp.focus(); return; }
+  if(setupKind() === 'cat') addCat(v); else addPerson(v);
+}
+function addPerson(v){
+  const t = curTrip();
   if(t.people.includes(v)){ toast('이미 있는 이름이에요'); return; }
   t.people.push(v); render();
   toast(`'${v}'님을 추가했어요`);
-  document.getElementById('newPerson').focus();
+  document.getElementById('setupInput')?.focus();
 }
 function delPerson(i){
   const t = curTrip();
@@ -733,13 +742,12 @@ function addPrep(){
   document.getElementById('newCat').value = cat;
   document.getElementById('newPrep').focus();
 }
-function addCat(){
-  const t = curTrip(), inp = document.getElementById('newCatName'), v = inp.value.trim();
-  if(!v){ inp.focus(); return; }
+function addCat(v){
+  const t = curTrip();
   if(prepCats(t).includes(v)){ toast('이미 있는 분류예요'); return; }
   prepCats(t).push(v); state.lastCat = v; render();
   toast(`'${v}' 분류를 추가했어요`);
-  document.getElementById('newCatName').focus();
+  document.getElementById('setupInput')?.focus();
 }
 function catModal(i){
   const t = curTrip(), old = prepCats(t)[i];

@@ -768,3 +768,86 @@ input[type=text],input[type=number],input[type=date],input[type=time],input[type
   .btn{font-size:13.5px}
 }
 @media (max-width:640px){.hide-sm{display:none}}
+
+/* ============ 준비: 인원·분류 한 패널 + 촘촘한 리스트 ============ */
+.prep-setup{padding:12px 14px;margin-bottom:12px;display:flex;flex-direction:column;gap:8px}
+.setup-line{display:flex;align-items:center;gap:10px;min-width:0}
+.setup-lbl{flex:none;display:inline-flex;align-items:center;gap:4px;width:52px;font-size:12px;color:var(--muted)}
+.setup-lbl .ic{width:14px;height:14px}
+.prep-setup .chips{display:flex;flex-wrap:wrap;gap:5px;min-width:0}
+.prep-setup .chip{font-size:12.5px;padding:2px 3px 2px 3px;gap:4px}
+.prep-setup .chip::before{width:19px;height:19px;font-size:10px}
+.prep-setup .chip.tag{padding-left:9px}
+.prep-setup .chip button{width:20px;height:20px;font-size:11px}
+.prep-setup .chip .tag-n{font-size:10.5px;padding:0 6px}
+.setup-add{display:flex;align-items:center;gap:6px;padding-top:8px;border-top:1px solid var(--hair)}
+.setup-add .seg-ctl{flex:none}
+.setup-add .seg-ctl button{padding:5px 10px;font-size:12.5px}
+.setup-add input{flex:1;min-width:0;padding:7px 11px !important;font-size:14px}
+.setup-add .btn{flex:none}
+
+.prep-panel{padding:14px 16px}
+.prep-head{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.prep-head h3{flex:none}
+.prep-count{flex:none;font-size:13px;color:var(--muted)}
+.prep-count b{color:var(--text);font-weight:400}
+.prep-head .progress{flex:1;height:5px}
+.prep-add{margin-bottom:4px;gap:6px}
+.prep-add select{width:auto;padding:7px 10px;font-size:13.5px}
+.prep-add input{flex:1;min-width:120px;padding:7px 11px;font-size:14px}
+.prep-help{margin-top:8px;font-size:11.5px}
+
+/* 리스트 간격 · 글자 */
+table.prep th{padding:6px 5px;font-size:11px}
+table.prep td{padding:4px 5px}
+table.prep td.item{font-size:14px;padding-left:6px;line-height:1.35}
+table.prep tr.cat td{padding:12px 6px 3px;font-size:11px;letter-spacing:.04em}
+table.prep input[type=checkbox]{width:18px;height:18px;border-width:1.5px}
+table.prep input[type=checkbox]:checked::after{width:4px;height:8px;border-width:0 2px 2px 0}
+table.prep td.acts .icon-btn{width:28px;height:28px}
+table.prep td.acts .icon-btn .ic{width:15px;height:15px}
+table.prep .grip-cell{width:24px}
+.drag-handle{width:22px;height:26px}
+.memo-in{padding:3px 8px !important;font-size:12.5px}
+
+@media (max-width:640px){
+  .prep-setup{padding:10px 12px;gap:7px}
+  .setup-lbl{width:44px;font-size:11.5px}
+  /* 칩은 한 줄로 두고 옆으로 넘겨 보기 */
+  .prep-setup .chips{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding:1px 0}
+  .prep-setup .chips::-webkit-scrollbar{display:none}
+  .prep-setup .chip{flex:none}
+  .setup-add input{font-size:16px !important;padding:6px 10px !important}
+  .setup-add .seg-ctl button{padding:5px 9px;font-size:12px}
+
+  .prep-panel{padding:12px}
+  .prep-head{margin-bottom:8px}
+  .prep-add select{padding:6px 8px !important;font-size:16px !important;max-width:96px}
+  .prep-add input{min-width:0;padding:6px 10px !important}
+
+  /* 한 항목 = 2줄: [⠿ 이름 ✎🗑] / [사람 체크 … 메모] */
+  table.prep tr.cat td{padding:10px 2px 2px;font-size:11px}
+  table.prep tr:not(.cat){padding:5px 0 6px;align-items:center}
+  table.prep tr:not(.cat) td{padding:1px 2px}
+  table.prep .grip-cell{width:24px}
+  table.prep td.item{flex:1 1 calc(100% - 88px);font-size:13.5px;padding:3px 2px}
+  table.prep td.acts{width:64px}
+  table.prep td.acts .icon-btn{width:30px;height:30px}
+  table.prep td.chk{margin-top:2px}
+  table.prep td.chk:nth-child(3){margin-left:24px}
+  table.prep td.chk label{padding:2px 7px 2px 3px;gap:3px}
+  table.prep td.chk .who{font-size:11.5px}
+  table.prep input[type=checkbox]{width:17px;height:17px}
+  table.prep td.memo-cell{order:3;flex:1 1 110px;padding:2px 0 0 4px;margin-top:2px}
+  .memo-in{font-size:13px !important;padding:4px 9px !important;border-radius:10px !important}
+  .prep-help{font-size:11px}
+}
+@media (max-width:640px){
+  /* 폰: 사람별 체크는 배경 없이 가볍게, 메모는 있을 때만 작은 글씨로 */
+  table.prep td.chk label{background:none;padding:2px 4px 2px 0}
+  table.prep td.chk + td.chk{margin-left:4px}
+  table.prep td.memo-cell:not(.has){display:none}
+  table.prep td.memo-cell.has{order:4;flex:1 1 100%;padding:0 0 0 24px;margin-top:0}
+  table.prep td.memo-cell.has .memo-in{background:transparent !important;border-color:transparent !important;padding:1px 0 !important;font-size:12.5px !important;color:var(--muted)}
+  table.prep td.memo-cell.has .memo-in:focus{background:var(--surface2) !important;padding:3px 8px !important;color:var(--text)}
+}table.prep input.memo-in{font-size:12.5px;padding:3px 8px}
