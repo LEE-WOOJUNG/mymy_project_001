@@ -281,7 +281,7 @@ fieldset.segf legend{font-size:12.5px;font-weight:800;padding:2px 10px;color:var
 .bar > div{height:100%;background:linear-gradient(90deg,var(--accent-2),var(--accent));border-radius:99px}
 .exp-day{font-size:12px;font-weight:800;color:var(--muted);margin:18px 0 4px;display:flex;justify-content:space-between;letter-spacing:.02em}
 .exp{display:flex;gap:12px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
-.exp .ic{font-size:19px;width:42px;height:42px;border-radius:50%;background:var(--surface2);display:grid;place-items:center;flex:none}
+.exp .exp-ic{font-size:19px;width:42px;height:42px;border-radius:50%;background:var(--surface2);display:grid;place-items:center;flex:none}
 .exp .info{flex:1;min-width:0;font-weight:650}
 .exp .info .row{font-weight:500;margin-top:2px}
 .exp .amt{font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
@@ -564,7 +564,7 @@ table.prep td.chk .who{display:none}
   .sum .v{font-size:21px}
   .bar-row{grid-template-columns:76px 1fr auto;gap:8px}
   .exp{gap:10px}
-  .exp .ic{width:38px;height:38px;font-size:17px}
+  .exp .exp-ic{width:38px;height:38px;font-size:17px}
   .exp > div:last-child{display:flex;flex-direction:column}
   .seg-ctl button{padding:6px 11px}
 
@@ -590,3 +590,181 @@ table.prep td.chk .who{display:none}
   .grid2{grid-template-columns:1fr}
   .orbit-foot{gap:8px}
 }
+
+/* ================================================================
+   트렌디 리프레시 — 얇은 선, 은은한 그림자, 촘촘한 타이포, 라인 아이콘
+   ================================================================ */
+:root{
+  --hair:color-mix(in srgb,var(--line-strong) 70%,transparent);
+  --shadow-sm:0 1px 2px rgba(60,45,90,.05);
+  --shadow:0 1px 2px rgba(60,45,90,.04),0 8px 24px -14px rgba(60,45,90,.16);
+  --shadow-lg:0 2px 6px -2px rgba(60,45,90,.06),0 22px 44px -22px rgba(60,45,90,.28);
+  --r:20px; --r-md:16px; --r-sm:12px;
+}
+body{font-size:15px;letter-spacing:-.015em;line-height:1.55}
+h1{letter-spacing:-.03em} h2{font-size:18px;letter-spacing:-.025em} h3{font-size:15px;letter-spacing:-.02em}
+.small{font-size:12.5px}
+
+/* 아이콘 */
+.ic{width:18px;height:18px;display:block;flex:none}
+.badge .ic{width:13px;height:13px;margin-right:1px;opacity:.75}
+.btn .ic{width:16px;height:16px;display:inline-block;vertical-align:-3px;margin-right:4px}
+.title-edit .ic{width:15px;height:15px}
+
+/* 표면 · 선 */
+.panel{border:1px solid var(--hair);border-radius:var(--r);box-shadow:var(--shadow);padding:20px}
+.badge{font-size:11.5px;padding:3px 8px;border-radius:8px;font-weight:400 !important;gap:3px}
+.badge.gray{background:var(--surface2);color:var(--text2)}
+
+/* 버튼: 은은한 단색, 둥근 사각 */
+.btn{border:1px solid var(--hair);border-radius:12px;padding:9px 15px;font-size:14px;box-shadow:none;color:var(--text)}
+.btn:hover{background:var(--surface2)}
+.btn.primary{background:var(--text);border-color:var(--text);color:var(--bg);box-shadow:none}
+.btn.primary:hover{filter:none;background:color-mix(in srgb,var(--text) 86%,var(--accent));box-shadow:none}
+.btn.sm{padding:6px 11px;font-size:13px;border-radius:10px}
+.icon-btn{width:32px;height:32px;border-radius:10px;color:var(--muted)}
+
+/* 상단 바: 얇은 유리 */
+.topbar{border:1px solid var(--hair);border-radius:16px;padding:7px 8px 7px 12px;box-shadow:var(--shadow-sm);background:color-mix(in srgb,var(--surface) 72%,transparent)}
+.brand{font-size:15px;gap:8px}
+.brand-logo{width:30px;height:30px;font-size:0;color:#fff;background:linear-gradient(135deg,#f2b5c8,#b9a6dc);box-shadow:none}
+.brand-logo .ic{width:16px;height:16px}
+.brand-name{font-size:16px !important;letter-spacing:-.02em}
+.top-link{font-size:13px;padding:7px 10px;border-radius:10px}
+.topbar .btn.primary{padding:7px 12px;font-size:13px}
+
+/* 여행 화면 탭: 세그먼트 컨트롤 */
+.tabs{border:1px solid var(--hair);border-radius:14px;padding:4px;gap:2px;box-shadow:var(--shadow-sm);background:color-mix(in srgb,var(--surface2) 85%,transparent)}
+.tab{display:flex;align-items:center;justify-content:center;gap:6px;border-radius:10px;padding:8px 10px;font-size:14px;color:var(--muted)}
+.tab .ic{width:17px;height:17px}
+.tab.on{background:var(--surface);color:var(--text);box-shadow:0 1px 3px rgba(60,45,90,.12)}
+.tab-ic{margin:0}
+
+/* 여행 제목 */
+.trip-head h1{font-size:22px !important;letter-spacing:-.03em}
+.trip-head .meta{font-size:12.5px}
+.trip-head .back{width:38px;height:38px;border-radius:12px;font-size:16px;border:1px solid var(--hair);box-shadow:none}
+
+/* 캘린더 · 타임라인 */
+.cell{border-radius:12px;min-height:72px;padding:7px}
+.cell.in{background:var(--surface2)}
+.cell.sel{background:var(--text) !important;color:var(--bg);box-shadow:none}
+.cell.sel .stay,.cell.sel .cnt{color:var(--bg)}
+.cell .dn{font-size:13px}
+.stay-box{border-radius:14px;background:var(--surface2) !important;border:1px solid var(--hair)}
+.tl-body{border-radius:14px;background:var(--surface2);border:1px solid color-mix(in srgb,var(--hair) 60%,transparent)}
+.tl-dot{width:12px;height:12px;border-width:3px;border-color:var(--accent)}
+.tl-item:not(:last-child) .tl-dot::after{left:1.5px;width:3px}
+
+/* 칩 · 진행바 */
+.chip{font-size:13px;padding:3px 5px;border-color:var(--hair);background:var(--surface)}
+.chip::before{width:22px;height:22px;font-size:11px}
+.progress{height:6px}
+
+/* 항공권 */
+.flight-head{background:var(--surface2) !important;border-bottom:1px solid var(--hair)}
+.seg .ap{font-size:26px;letter-spacing:-.02em}
+.layover{border-radius:10px;font-size:12.5px}
+
+/* 경비 */
+.sum{border-radius:16px;border:1px solid var(--hair);box-shadow:none;padding:15px}
+.sum::before{display:none}
+.sum .k{font-size:12px}
+.sum .v{font-size:21px;letter-spacing:-.03em}
+.exp .exp-ic{width:36px;height:36px;border-radius:12px;font-size:16px}
+.seg-ctl{border-radius:10px;padding:3px}
+.seg-ctl button{border-radius:8px;font-size:12.5px;padding:5px 11px}
+.seg-ctl button.on{color:var(--text)}
+
+/* 첫 화면 카드 · 타이틀 */
+.ocard{border-radius:24px;border:1px solid var(--hair);box-shadow:var(--shadow-lg)}
+.ocard.active{box-shadow:0 24px 50px -24px rgba(90,70,140,.45),0 2px 6px rgba(60,45,90,.06)}
+.ocover{height:138px;padding:12px 14px}
+.ocover .dday,.ocover .dest-pill{font-size:12px;padding:3px 9px;border-radius:8px;background:rgba(255,255,255,.82)}
+.ocover .acts .icon-btn{width:30px;height:30px;border-radius:9px;color:#4b4458}
+.ocover .acts .icon-btn .ic{width:15px;height:15px}
+.obody{padding:13px 16px 15px;gap:3px}
+.obody .name{font-size:17px;letter-spacing:-.025em}
+.obody .dates{font-size:12.5px}
+.obody .stats{gap:4px;margin-top:6px}
+.add-inner{height:250px}
+.add-inner b{font-size:15px}
+.orbit-nav{width:38px;height:38px;border-radius:12px;border:1px solid var(--hair);box-shadow:none}
+.orbit-nav .ic{width:18px;height:18px}
+.orbit-foot .dot{width:6px;height:6px}
+.orbit-foot .dot.on{width:18px}
+.home .hero-sub{font-size:13.5px;color:var(--muted)}
+
+/* 팝업 */
+dialog{border-radius:24px}
+#modalTitle{font-size:18px;letter-spacing:-.025em}
+label.f{font-size:12px;color:var(--muted)}
+input[type=text],input[type=number],input[type=date],input[type=time],input[type=datetime-local],select,textarea{border-radius:12px;border:1px solid var(--hair);background:var(--surface2);padding:10px 12px;font-size:15px}
+.modal-actions .btn{border-radius:12px}
+
+/* ============ 폰(갤럭시 S23 울트라 384px 등) ============ */
+@media (max-width:640px){
+  body{font-size:14px}
+  h2{font-size:16.5px} h3{font-size:14.5px}
+  .small{font-size:12px}
+  .panel{padding:14px;border-radius:18px}
+  body:not(.home-mode) .wrap{padding-left:12px;padding-right:12px}
+
+  .topbar{border-radius:14px;padding:6px 6px 6px 8px;margin-bottom:10px}
+  .brand-logo{width:28px;height:28px}
+  .top-link{font-size:12.5px;padding:6px 7px}
+  .topbar .btn.primary{padding:6px 10px;font-size:12.5px}
+
+  .home .hero-title{font-size:clamp(26px,8vw,32px) !important;line-height:1.2}
+  .home .hero-sub{font-size:12.5px;margin-top:4px}
+  .home-head{padding-top:clamp(8px,2.2vh,22px)}
+  .ocard{width:min(270px,72vw)}
+  .ocover{height:122px}
+  .obody .name{font-size:16px}
+  .obody .dates{font-size:12px}
+  .badge{font-size:11px;padding:2px 7px}
+  .add-inner{height:226px}
+
+  .trip-head h1{font-size:17px !important;line-height:1.3}
+  .trip-head .meta{font-size:11.5px}
+  .trip-head .back{width:34px;height:34px}
+  .trip-head .badge{margin-top:4px}
+
+  /* 아래 탭 바: 유리 + 라인 아이콘, 선택 시 색만 */
+  .tabs{left:12px;right:12px;bottom:calc(10px + env(safe-area-inset-bottom));border-radius:20px;padding:5px;background:color-mix(in srgb,var(--surface) 80%,transparent);
+    backdrop-filter:blur(18px) saturate(1.4);-webkit-backdrop-filter:blur(18px) saturate(1.4);box-shadow:0 8px 28px -12px rgba(60,45,90,.3);border:1px solid var(--hair)}
+  .tab{flex-direction:column;gap:2px;padding:6px 2px;border-radius:14px;font-size:11px;color:var(--muted)}
+  .tab .ic{width:21px;height:21px}
+  .tab.on{background:transparent;box-shadow:none;color:var(--accent-deep)}
+  .tab.on .tab-tx{font-weight:400}
+  .tab.on .tab-ic{position:relative}
+  .tab.on .tab-ic::after{content:"";position:absolute;left:50%;bottom:-3px;width:4px;height:4px;border-radius:50%;background:currentColor;transform:translateX(-50%);opacity:0}
+
+  .icon-btn{width:34px;height:34px}
+  .icon-btn .ic{width:17px;height:17px}
+
+  .cell{min-height:48px;border-radius:10px;padding:4px}
+  .cell .dn{font-size:12.5px}
+  .tl-time{font-size:12.5px}
+  .tl-body{padding:10px 12px}
+  .tl-body b{font-size:14px}
+
+  table.prep td.item{font-size:14px}
+  table.prep td.chk .who{font-size:12px}
+  table.prep td.chk label{padding:4px 9px 4px 5px}
+  table.prep input[type=checkbox]{width:20px;height:20px}
+
+  .seg .ap{font-size:21px}
+  .sum .v{font-size:18px}
+  .sum{padding:12px}
+  .bar-row{font-size:12.5px}
+  .exp .info{font-size:14px}
+  .exp .amt{font-size:14px}
+
+  input[type=text],input[type=number],input[type=date],input[type=time],input[type=datetime-local],select,textarea{font-size:16px !important;padding:9px 12px}
+  #modalTitle{font-size:17px}
+  dialog{border-radius:22px 22px 0 0}
+  .modal-actions .btn{padding:11px}
+  .btn{font-size:13.5px}
+}
+@media (max-width:640px){.hide-sm{display:none}}

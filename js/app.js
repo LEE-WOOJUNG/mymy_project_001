@@ -14,6 +14,23 @@ function save(){
   catch(e){ toast('저장 실패: 브라우저 저장공간을 확인하세요'); return false; }
 }
 
+/* ========== 라인 아이콘 (SVG) ========== */
+const IC_PATHS = {
+  edit:'<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/>',
+  trash:'<path d="M4 7h16"/><path d="M9.5 7V5a1 1 0 011-1h3a1 1 0 011 1v2"/><path d="M6.5 7l.8 12a2 2 0 002 1.9h5.4a2 2 0 002-1.9l.8-12"/>',
+  camera:'<path d="M4 8.5A1.5 1.5 0 015.5 7h2L9 5h6l1.5 2h2A1.5 1.5 0 0120 8.5v9a1.5 1.5 0 01-1.5 1.5h-13A1.5 1.5 0 014 17.5z"/><circle cx="12" cy="13" r="3.3"/>',
+  left:'<path d="M14.5 5.5L8 12l6.5 6.5"/>',
+  right:'<path d="M9.5 5.5L16 12l-6.5 6.5"/>',
+  cal:'<rect x="4" y="5" width="16" height="15" rx="3.5"/><path d="M4 10h16M9 3v4M15 3v4"/>',
+  plane:'<path d="M21 3L3 10.4l7.2 2.4L12.6 20z"/><path d="M10.2 12.8L15 8"/>',
+  wallet:'<path d="M4 7.5A2.5 2.5 0 016.5 5H17a1 1 0 011 1v2"/><rect x="4" y="8" width="16" height="12" rx="3"/><path d="M16 14h.01"/>',
+  check:'<rect x="4" y="4" width="16" height="16" rx="5"/><path d="M8.5 12.3l2.4 2.4 4.6-5"/>',
+  users:'<circle cx="9" cy="8.5" r="3.2"/><path d="M3.5 19c.6-3 2.8-4.6 5.5-4.6s4.9 1.6 5.5 4.6"/><path d="M16 5.6a3 3 0 010 5.8M17.6 14.7c1.5.6 2.5 2 2.9 4.3"/>',
+  coin:'<circle cx="12" cy="12" r="8"/><path d="M14.4 9.4c-.5-.8-1.3-1.2-2.4-1.2-1.4 0-2.4.7-2.4 1.9s1 1.6 2.4 1.9 2.4.8 2.4 1.9-1 2-2.4 2c-1.1 0-2-.4-2.5-1.2M12 6.6v1.6M12 15.8v1.6"/>',
+  pin:'<path d="M12 21s-6.5-5.8-6.5-11A6.5 6.5 0 0118.5 10c0 5.2-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.4"/>'
+};
+const IC = Object.fromEntries(Object.entries(IC_PATHS).map(([k, p]) =>
+  [k, `<svg class="ic ic-${k}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`]));
 /* ========== 유틸 ========== */
 const uid = () => Math.random().toString(36).slice(2,8) + Date.now().toString(36);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -113,9 +130,9 @@ function renderHome(){
         <div class="otop">
           ${dday(t) ? `<span class="dday">${dday(t)}</span>` : ''}
           <div class="acts">
-            <button class="icon-btn" title="커버 이미지" aria-label="커버 이미지 올리기·바꾸기" onclick="coverMenu('${t.id}')">📷</button>
-            <button class="icon-btn" title="여행 정보 수정" aria-label="여행 정보 수정" onclick="tripModal('${t.id}')">✎</button>
-            <button class="icon-btn" title="여행 삭제" aria-label="여행 삭제" onclick="delTrip('${t.id}')">🗑</button>
+            <button class="icon-btn" title="커버 이미지" aria-label="커버 이미지 올리기·바꾸기" onclick="coverMenu('${t.id}')">${IC.camera}</button>
+            <button class="icon-btn" title="여행 정보 수정" aria-label="여행 정보 수정" onclick="tripModal('${t.id}')">${IC.edit}</button>
+            <button class="icon-btn" title="여행 삭제" aria-label="여행 삭제" onclick="delTrip('${t.id}')">${IC.trash}</button>
           </div>
         </div>
         <span class="dest-pill">📍 ${esc(t.dest || '목적지 미정')}</span>
@@ -124,10 +141,10 @@ function renderHome(){
         <div class="name">${esc(t.name)}</div>
         <div class="dates">${t.start ? `${fmtDate(t.start,true)} ~ ${fmtDate(t.end)} · ${rangeDates(t.start,t.end).length}일` : '날짜 미정'}</div>
         <div class="stats">
-          <span class="badge gray">👥 ${t.people.length}</span>
-          <span class="badge gray">✈ ${t.flights.length}</span>
-          <span class="badge gray">💰 ${t.expenses.length}</span>
-          <span class="badge gray">✅ ${pct}%</span>
+          <span class="badge gray">${IC.users}${t.people.length}</span>
+          <span class="badge gray">${IC.plane}${t.flights.length}</span>
+          <span class="badge gray">${IC.coin}${t.expenses.length}</span>
+          <span class="badge gray">${IC.check}${pct}%</span>
         </div>
       </div>
     </article>`;
@@ -137,7 +154,7 @@ function renderHome(){
       <div class="home-bg" aria-hidden="true"><div class="home-map">${worldMapSVG()}</div>${skyDecor()}</div>
       ${navBar(true)}
       <header class="home-head">
-        <h1 class="hero-title"><button class="title-btn" onclick="editTitle()" title="타이틀 수정">${titleHTML()}<span class="title-edit" aria-hidden="true">✎</span></button></h1>
+        <h1 class="hero-title"><button class="title-btn" onclick="editTitle()" title="타이틀 수정">${titleHTML()}<span class="title-edit" aria-hidden="true">${IC.edit}</span></button></h1>
         <p class="hero-sub">${trips.length ? `지금까지 ${trips.length}번의 여행 · 다가오는 여행 ${upcoming}개` : '세계 어디든, 함께 떠날 여행을 등록해 보세요'}</p>
       </header>
       <section class="orbit" id="orbit" tabindex="0" aria-roledescription="carousel" aria-label="내 여행 — 좌우로 끌어서 넘기기">
@@ -148,9 +165,9 @@ function renderHome(){
         </article>
       </section>
       <div class="orbit-foot">
-        <button class="orbit-nav" aria-label="이전 여행" onclick="orbitStep(-1)">‹</button>
+        <button class="orbit-nav" aria-label="이전 여행" onclick="orbitStep(-1)">${IC.left}</button>
         <div class="dots">${Array.from({length: trips.length + 1}, (_, i) => `<button class="dot" aria-label="${i < trips.length ? esc(trips[i].name) : '새 여행'}" onclick="orbitGo(${i})"></button>`).join('')}</div>
-        <button class="orbit-nav" aria-label="다음 여행" onclick="orbitStep(1)">›</button>
+        <button class="orbit-nav" aria-label="다음 여행" onclick="orbitStep(1)">${IC.right}</button>
       </div>
     </div>
   `;
@@ -175,8 +192,8 @@ function coverMenu(id){
   openModal('커버 이미지', `
     <img class="cover-preview" src="${t.cover}" alt="${esc(t.name)} 커버 이미지">
     <div class="row" style="margin-top:14px;justify-content:center">
-      <button type="button" class="btn" onclick="closeModal();pickCover('${id}')">📷 다른 이미지로 변경</button>
-      <button type="button" class="btn" onclick="removeCover('${id}')">🗑 이미지 삭제</button>
+      <button type="button" class="btn" onclick="closeModal();pickCover('${id}')">${IC.camera} 다른 이미지로 변경</button>
+      <button type="button" class="btn" onclick="removeCover('${id}')">${IC.trash} 이미지 삭제</button>
     </div>
   `, () => {}, '완료');
 }
@@ -218,12 +235,12 @@ document.getElementById('coverFile').addEventListener('change', async e => {
 function navBar(isHome){
   return `<header class="topbar">
     <button class="brand" onclick="go(null)" aria-label="처음 화면으로">
-      <span class="brand-logo" aria-hidden="true">✈</span><span class="brand-name">Travel Journal</span>
+      <span class="brand-logo" aria-hidden="true">${IC.plane}</span><span class="brand-name">Travel Journal</span>
     </button>
     <nav class="top-links">
       ${isHome ? `
-        <button class="top-link" onclick="exportData()">백업 내보내기</button>
-        <button class="top-link" onclick="document.getElementById('importFile').click()">백업 불러오기</button>`
+        <button class="top-link" onclick="exportData()" title="백업 내보내기"><span class="hide-sm">백업 </span>내보내기</button>
+        <button class="top-link" onclick="document.getElementById('importFile').click()" title="백업 불러오기"><span class="hide-sm">백업 </span>불러오기</button>`
       : `<button class="top-link" onclick="go(null)">여행 목록</button>`}
       <button class="btn primary sm" onclick="tripModal()">+ 새 여행</button>
     </nav>
@@ -489,7 +506,7 @@ function delTrip(id){
 }
 
 /* ---------- 여행 상세 ---------- */
-const TABS = [['schedule','📅 일정'],['flight','✈️ 항공권'],['expense','💰 경비'],['prep','✅ 준비']];
+const TABS = [['schedule','일정','cal'],['flight','항공권','plane'],['expense','경비','wallet'],['prep','준비','check']];
 function renderTrip(t){
   if(!TABS.some(x => x[0] === state.tab)) state.tab = 'schedule';
   const body = {schedule:renderSchedule, prep:renderPrep, flight:renderFlights, expense:renderExpenses}[state.tab](t);
@@ -503,9 +520,9 @@ function renderTrip(t){
       </div>
       <div class="spacer"></div>
       ${dday(t) ? `<span class="badge">${dday(t)}</span>` : ''}
-      <button class="icon-btn" title="여행 정보 수정" onclick="tripModal('${t.id}')">✎</button>
+      <button class="icon-btn" title="여행 정보 수정" onclick="tripModal('${t.id}')">${IC.edit}</button>
     </div>
-    <nav class="tabs" aria-label="여행 메뉴">${TABS.map(([k,l]) => { const [ic, ...rest] = l.split(' '); return `<button class="tab ${state.tab===k?'on':''}" ${state.tab===k?'aria-current="page"':''} onclick="setTab('${k}');window.scrollTo(0,0)"><span class="tab-ic" aria-hidden="true">${ic}</span><span class="tab-tx">${rest.join(' ')}</span></button>`; }).join('')}</nav>
+    <nav class="tabs" aria-label="여행 메뉴">${TABS.map(([k,l,ic]) => `<button class="tab ${state.tab===k?'on':''}" ${state.tab===k?'aria-current="page"':''} onclick="setTab('${k}');window.scrollTo(0,0)"><span class="tab-ic">${IC[ic]}</span><span class="tab-tx">${l}</span></button>`).join('')}</nav>
     ${body}
   `;
 }
@@ -556,14 +573,14 @@ function renderSchedule(t){
           <span class="badge">Day ${dayN}</span>
           <h2 style="margin:0">${fmtDate(sel)}</h2>
           <div class="spacer"></div>
-          <button class="icon-btn" title="이전 날" ${dayN<=1?'disabled':''} onclick="selectDate('${addDays(sel,-1)}')">◀</button>
-          <button class="icon-btn" title="다음 날" ${dayN>=dates.length?'disabled':''} onclick="selectDate('${addDays(sel,1)}')">▶</button>
+          <button class="icon-btn" title="이전 날" ${dayN<=1?'disabled':''} onclick="selectDate('${addDays(sel,-1)}')">${IC.left}</button>
+          <button class="icon-btn" title="다음 날" ${dayN>=dates.length?'disabled':''} onclick="selectDate('${addDays(sel,1)}')">${IC.right}</button>
         </div>
         <div class="stay-box">
           ${stay ? `
             <div class="row stay-row"><b>🏨 ${esc(stay.name)}</b><div class="spacer"></div>
-              <button class="icon-btn" onclick="stayModal()">✎</button>
-              <button class="icon-btn del" onclick="delStay()">🗑</button></div>
+              <button class="icon-btn" onclick="stayModal()">${IC.edit}</button>
+              <button class="icon-btn del" onclick="delStay()">${IC.trash}</button></div>
             ${stay.addr ? `<div class="small">📍 ${esc(stay.addr)}</div>` : ''}
             ${stay.memo ? `<div class="small muted">${esc(stay.memo)}</div>` : ''}`
           : `<div class="row"><span class="muted">이 날 숙소가 아직 없어요</span><div class="spacer"></div>
@@ -578,7 +595,7 @@ function renderSchedule(t){
               <div class="tl-body"><b>${esc(it.title)}</b>
                 ${it.place ? `<div class="small">📍 ${esc(it.place)}</div>` : ''}
                 ${it.memo ? `<div class="memo">${esc(it.memo)}</div>` : ''}</div>
-              <div class="tl-acts"><button class="icon-btn" aria-label="일정 수정" onclick="schedModal('${it.id}')">✎</button><button class="icon-btn del" aria-label="일정 삭제" onclick="delSched('${it.id}')">🗑</button></div>
+              <div class="tl-acts"><button class="icon-btn" aria-label="일정 수정" onclick="schedModal('${it.id}')">${IC.edit}</button><button class="icon-btn del" aria-label="일정 삭제" onclick="delSched('${it.id}')">${IC.trash}</button></div>
             </div>`).join('')
           : `<div class="muted small" style="padding:20px 0;text-align:center">등록된 일정이 없어요</div>`}
         </div>
@@ -654,7 +671,7 @@ function renderPrep(t){
         <td class="item" title="클릭하면 전원 체크/해제" onclick="toggleAll('${it.id}')">${esc(it.text)}</td>
         ${t.people.map((p,i) => `<td class="chk"><label><input type="checkbox" aria-label="${esc(p)}" ${it.checks[p]?'checked':''} onchange="togglePrep('${it.id}',${i})"><span class="who">${esc(p)}</span></label></td>`).join('')}
         <td class="memo-cell"><input type="text" class="memo-in" value="${esc(it.memo)}" placeholder="메모" onchange="setPrepMemo('${it.id}',this.value)" onkeydown="enter(event,()=>this.blur())"></td>
-        <td class="acts"><button class="icon-btn" onclick="prepModal('${it.id}')">✎</button><button class="icon-btn del" onclick="delPrep('${it.id}')">🗑</button></td>
+        <td class="acts"><button class="icon-btn" onclick="prepModal('${it.id}')">${IC.edit}</button><button class="icon-btn del" onclick="delPrep('${it.id}')">${IC.trash}</button></td>
       </tr>`).join('');
   });
   return `
@@ -862,8 +879,8 @@ function renderFlights(t){
           ${segs.length > 1 ? `<span class="badge gray">경유 ${segs.length-1}회</span>` : '<span class="badge gray">직항</span>'}
           <div class="spacer"></div>
           ${f.ref ? `<span class="small muted">예약번호 <b style="color:var(--text)">${esc(f.ref)}</b></span>` : ''}
-          <button class="icon-btn" onclick="flightModal('${f.id}')">✎</button>
-          <button class="icon-btn del" onclick="delFlight('${f.id}')">🗑</button>
+          <button class="icon-btn" onclick="flightModal('${f.id}')">${IC.edit}</button>
+          <button class="icon-btn del" onclick="delFlight('${f.id}')">${IC.trash}</button>
         </div>
         ${segs.map((s,i) => {
           let lay = '';
@@ -1003,7 +1020,7 @@ function renderExpenses(t){
         ${analyses || `<div class="panel" style="margin-bottom:14px"><h3 style="margin-bottom:8px">분류별 지출</h3><div class="muted small">아직 지출이 없어요</div></div>`}
         <div class="panel">
           <h3 style="margin-bottom:8px">💵 환전 현금</h3>
-          ${cashShown.length ? cashShown.map(c => `<div class="row small" style="padding:3px 0"><span>${esc(c.date ? fmtDate(c.date) : '')} ${esc(c.memo)}</span><div class="spacer"></div><b>${money(c.amount)} ${esc(c.cur)}</b><button class="icon-btn del" onclick="delCash('${c.id}')">🗑</button></div>`).join('') : '<div class="muted small">환전한 현금을 등록하면 남은 현금을 계산해 드려요</div>'}
+          ${cashShown.length ? cashShown.map(c => `<div class="row small" style="padding:3px 0"><span>${esc(c.date ? fmtDate(c.date) : '')} ${esc(c.memo)}</span><div class="spacer"></div><b>${money(c.amount)} ${esc(c.cur)}</b><button class="icon-btn del" onclick="delCash('${c.id}')">${IC.trash}</button></div>`).join('') : '<div class="muted small">환전한 현금을 등록하면 남은 현금을 계산해 드려요</div>'}
         </div>
       </div>
       <div class="panel">
@@ -1014,7 +1031,7 @@ function renderExpenses(t){
           const daySum = {}; list.forEach(e => daySum[e.cur] = (daySum[e.cur]||0) + Number(e.amount));
           return `<div class="exp-day"><span>${day ? fmtDate(day) : '날짜 없음'}</span><span>${Object.entries(daySum).map(([c,v]) => money(v)+' '+esc(c)).join(' · ')}</span></div>
             ${list.map(e => `<div class="exp">
-              <div class="ic">${EXP_CATS[e.cat] || '📌'}</div>
+              <div class="exp-ic">${EXP_CATS[e.cat] || '📌'}</div>
               <div class="info"><div>${esc(e.title)}</div>
                 <div class="row small" style="gap:4px">
                   <span class="badge ${e.method}">${e.method==='card' ? '💳 '+esc(e.card||'카드') : '💵 현금'}</span>
@@ -1022,7 +1039,7 @@ function renderExpenses(t){
                   ${e.time ? `<span class="muted">${esc(e.time)}</span>` : ''}
                 </div></div>
               <div class="amt">${money(e.amount)} <span class="small muted">${esc(e.cur)}</span></div>
-              <div><button class="icon-btn" onclick="expModal('${e.id}')">✎</button><button class="icon-btn del" onclick="delExp('${e.id}')">🗑</button></div>
+              <div><button class="icon-btn" onclick="expModal('${e.id}')">${IC.edit}</button><button class="icon-btn del" onclick="delExp('${e.id}')">${IC.trash}</button></div>
             </div>`).join('')}`;
         }).join('') : `<div class="muted small" style="padding:24px 0;text-align:center">기록된 지출이 없어요</div>`}
       </div>
